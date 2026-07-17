@@ -27,9 +27,9 @@ Run with, e.g.::
 
     deepspeed -m ada.attacks.sft \\
         --model_name_or_path meta-llama/Llama-2-7b-chat-hf \\
-        --data_path data/harmful_sft.jsonl \\
+        --data_path data/train/sft/harmful_sft.jsonl \\
         --output_dir runs/e4_sft \\
-        --final_adapter_name step_60 \\
+        --final_adapter_name adapter-60 \\
         --max_steps 60
 """
 

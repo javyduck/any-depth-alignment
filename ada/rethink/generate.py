@@ -159,15 +159,16 @@ def build_mode_suffix(on_disk_mode: str, model_name: str, reasoning: bool) -> st
         return ""
     spec = _try_get_model(model_name)
     if spec is None:
-        logger.warning(
-            "Model %r not in the registry; using empty injection tokens "
-            "(matches the original script's baseline fall-through).",
-            model_name,
+        # Injecting modes need the model's assistant header. Silently returning ""
+        # would run base-mode but label the output as ADA-RK/Self-Defense, so fail
+        # loudly instead (register the model in configs/models.yaml).
+        raise KeyError(
+            f"Model {model_name!r} is not in the registry, so mode {on_disk_mode!r} "
+            f"cannot resolve its assistant header. Add it to configs/models.yaml "
+            f"(running an injecting mode without a header would silently degrade to base-mode)."
         )
-        header, reflection = "", ""
-    else:
-        header = _ada_rk_header(spec, reasoning)
-        reflection = _self_defense_reflection(spec, reasoning)
+    header = _ada_rk_header(spec, reasoning)
+    reflection = _self_defense_reflection(spec, reasoning)
     if on_disk_mode == "add_safetytoken":
         return header
     if on_disk_mode == "add_I":

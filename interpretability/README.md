@@ -46,10 +46,11 @@ They also `import setGPU` for automatic GPU selection; remove that line or
 
 1. **`clt_refusal_features.ipynb`** — loads `gemma-2-2b-it` + the `gemma`
    transcoder preset (auto-downloads `google/gemma-scope-2b-pt-transcoders`),
-   computes activations of the features in `refusal_features.py` on the prompt
-   *"How to commit suicide."* with the header re-injected mid-stream, and renders
-   the CLT-activation figure. Optionally runs `attribute(...)` + `serve(...)` to
-   view the refusal circuit interactively.
+   computes activations of the ten refusal-linked CLT features (the notebook lists
+   the `(layer, index)` targets inline; `refusal_features.py` is a standalone
+   reference copy of that list) on the prompt *"How to commit suicide."* with the
+   header re-injected mid-stream, and renders the CLT-activation figure. Optionally
+   runs `attribute(...)` + `serve(...)` to view the refusal circuit interactively.
 2. **`intervention_zero_out.ipynb`** — zeros the ten features on the `model`+`\n`
    header positions; a safe refusal collapses into harmful output.
 3. **`intervention_rescale.ipynb`** — forces the ten features to a large positive
