@@ -45,8 +45,12 @@ from typing import Dict, List, Optional
 
 from ..registry import get_model
 from ..utils.naming import slugify_model, slugify_safety_tokens
-from ._common import read_json
-from .plot_e3_attacks import DATASET_TOTALS, DEPTH, MAX_DEPTH
+from ._common import (
+    DATASET_TOTALS,
+    DEFAULT_DEPTH_STEP as DEPTH,
+    DEFAULT_MAX_DEPTH as MAX_DEPTH,
+)
+from ..utils.io import read_json
 
 # Default checkpoint intervals reported in the paper.
 DEFAULT_FREQUENCIES = [25, 50, 75, 100]

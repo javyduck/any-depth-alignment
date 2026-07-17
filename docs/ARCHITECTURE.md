@@ -15,7 +15,10 @@ model-agnostic — adding a model is one YAML entry, never a code change.
 | `probe_layer` | ADA-LP | transformer block whose hidden state the probe reads |
 | `hook_position` | ADA-LP | where in the block to read (default `input_layernorm`) |
 | `reasoning` | ADA-RK | whether the model emits a `<think>` block |
+| `generation_prompt_suffix` | collect/eval/gen | tokens appended after the generation prompt to reach the answer (reasoning/channel close) |
+| `chat_prompt_space` | collect/eval/gen | append a single space after the template (e.g. Llama-2's `[/INST]`) |
 | `chat_template_from` | loading | borrow another model's chat template if missing |
+| `short_name` | plotting | optional compact legend label (falls back to the HF basename) |
 
 Guardrail baselines and refusal keywords have their own small configs
 (`configs/guardrails.yaml`, `configs/refusal_keywords.yaml`).

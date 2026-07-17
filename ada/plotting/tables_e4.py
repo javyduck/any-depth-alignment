@@ -20,7 +20,12 @@ from typing import List, Optional
 
 from ..registry import get_model
 from ..utils.naming import slugify_model, slugify_safety_tokens
-from .plot_e3_attacks import DATASET_TOTALS, DEPTH, MAX_DEPTH, asr_from_generation_log
+from ._common import (
+    DATASET_TOTALS,
+    DEFAULT_DEPTH_STEP as DEPTH,
+    DEFAULT_MAX_DEPTH as MAX_DEPTH,
+    asr_from_generation_log,
+)
 
 ATTACKS = ["gcg", "autodan", "pair", "tap"]
 

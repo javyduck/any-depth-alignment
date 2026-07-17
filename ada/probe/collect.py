@@ -964,7 +964,7 @@ def main() -> None:
         safety_tokens = spec.probe_safety_tokens
     mask_tokens = _unescape(args.mask_tokens)  # None -> no masking (paper default)
     hook_position = args.hook_position or spec.hook_position
-    prompt_completion = spec.generation_prompt_suffix or (" " if spec.chat_prompt_space else "")
+    prompt_completion = spec.generation_prompt_completion
 
     # CUDA setup before any CUDA op; CUDA_VISIBLE_DEVICES pins the chosen GPU.
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)

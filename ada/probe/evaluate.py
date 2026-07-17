@@ -37,7 +37,6 @@ import gc
 import logging
 import os
 from contextlib import contextmanager
-from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -45,7 +44,6 @@ import joblib
 import numpy as np
 import torch
 import torch.nn as nn
-import yaml
 from tqdm import tqdm
 
 from ..data.loading import extract_messages, extract_response_text
@@ -62,8 +60,6 @@ from ..utils.naming import (
 )
 
 logger = logging.getLogger(__name__)
-
-_CONFIG_MODELS_YAML = Path(__file__).resolve().parents[2] / "configs" / "models.yaml"
 
 
 # --------------------------------------------------------------------------- #
@@ -288,31 +284,6 @@ def disable_adapter_temporarily(model, disable_adapter: bool):
 # --------------------------------------------------------------------------- #
 # Chat-template base-prompt construction (registry-driven, no name branching)
 # --------------------------------------------------------------------------- #
-@lru_cache(maxsize=1)
-def _suffix_map() -> Dict[str, str]:
-    """Per-model ``generation_prompt_suffix`` read directly from models.yaml.
-
-    Forward-compatible fallback: once :class:`ada.registry.ModelSpec` exposes the
-    ``generation_prompt_suffix`` field, :func:`generation_prompt_suffix` reads it
-    from the spec and this direct YAML read is never consulted.
-    """
-    with open(_CONFIG_MODELS_YAML, "r", encoding="utf-8") as fh:
-        raw = yaml.safe_load(fh)
-    default = (raw.get("defaults") or {}).get("generation_prompt_suffix", "") or ""
-    mapping: Dict[str, str] = {}
-    for entry in raw.get("models", []):
-        mapping[entry["hf_id"]] = entry.get("generation_prompt_suffix", default) or ""
-    return mapping
-
-
-def generation_prompt_suffix(spec) -> str:
-    """Resolve the completion appended after the generation prompt for ``spec``."""
-    value = getattr(spec, "generation_prompt_suffix", None)
-    if value is not None:
-        return value
-    return _suffix_map().get(spec.hf_id, "")
-
-
 def build_base_prompt(tokenizer, user_message: Dict, suffix: str = "") -> str:
     """Build the assistant-turn base prompt up to where the response begins.
 
@@ -601,8 +572,7 @@ def analyze_with_probes(
     logger.info("Loaded %d probe(s)", len(probes))
 
     try:
-        _spec = get_model(model_name)
-        suffix = generation_prompt_suffix(_spec) or (" " if _spec.chat_prompt_space else "")
+        suffix = get_model(model_name).generation_prompt_completion
     except KeyError:
         suffix = ""
 

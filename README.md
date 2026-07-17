@@ -130,6 +130,9 @@ python -m ada.rethink.generate  --model google/gemma-2-9b-it --dataset advbench 
 
 # Live streaming-defense demo (ADA-LP as the model's own guardrail)
 python -m ada.serving.server    --model google/gemma-2-9b-it
+
+# Closed-source (Claude Sonnet 4): ADA-RK only, via an extra assistant turn (needs ANTHROPIC_API_KEY)
+python -m ada.rethink.claude    --dataset advbench --mode add_safetytoken
 ```
 
 **What each stage does.** (1) *Collect* re-injects the Safety Tokens after the first *d* assistant tokens
@@ -266,6 +269,8 @@ bash scripts/make_all_figures.sh        # -> figures/*.pdf
 ```
 
 ## Repository layout
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces connect and the full registry-field reference.
 
 ```
 any-depth-alignment/

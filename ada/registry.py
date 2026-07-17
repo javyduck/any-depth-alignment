@@ -25,6 +25,8 @@ from typing import Optional
 
 import yaml
 
+from .utils.naming import slugify_model  # single source of truth for path slugs
+
 # configs/ lives next to the ada/ package at the repository root.
 _CONFIG_DIR = Path(__file__).resolve().parent.parent / "configs"
 _MODELS_YAML = _CONFIG_DIR / "models.yaml"
@@ -72,16 +74,23 @@ class ModelSpec:
     # like Llama-2's that end in ``[/INST]`` with no trailing whitespace). Matches
     # the original probe pipeline's per-model whitelist, so it is opt-in per model.
     chat_prompt_space: bool = False
+    # Optional short label for plots/legends (falls back to the HF basename).
+    short_name: Optional[str] = None
 
     @property
     def slug(self) -> str:
         """Filesystem-safe identifier used in output paths (``org_Model-Name``)."""
         return slugify_model(self.hf_id)
 
+    @property
+    def generation_prompt_completion(self) -> str:
+        """Tokens to append after ``apply_chat_template(add_generation_prompt=True)``.
 
-def slugify_model(model_name: str) -> str:
-    """Convert an HF id to the filesystem slug used throughout the pipeline."""
-    return model_name.replace("/", "_").replace(".", "_")
+        The registry-driven idiom used everywhere the assistant's free-text answer
+        must start: the per-model reasoning/channel suffix, or a single trailing
+        space for templates (like Llama-2's ``[/INST]``) that lack one.
+        """
+        return self.generation_prompt_suffix or (" " if self.chat_prompt_space else "")
 
 
 @functools.lru_cache(maxsize=1)
@@ -123,6 +132,7 @@ def _registry() -> "dict[str, ModelSpec]":
             chat_template_from=merged.get("chat_template_from"),
             generation_prompt_suffix=_decode(merged.get("generation_prompt_suffix", "") or ""),
             chat_prompt_space=bool(merged.get("chat_prompt_space", False)),
+            short_name=merged.get("short_name"),
         )
     return specs
 
@@ -161,3 +171,22 @@ def chat_template_source(model_name: str) -> Optional[str]:
         return get_model(model_name).chat_template_from
     except KeyError:
         return None
+
+
+def deep_alignment_baselines() -> "list[dict]":
+    """The ``deep_alignment_baselines`` block of ``configs/models.yaml`` (list of dicts)."""
+    return list(_load_yaml().get("deep_alignment_baselines", []) or [])
+
+
+def deep_alignment_base(model_name: Optional[str]) -> Optional[str]:
+    """Base model a deep-alignment baseline was built from (else ``None``).
+
+    Single registry accessor for the ``deep_alignment_baselines`` block so callers
+    (benign-response reuse, plotting) never re-parse ``models.yaml`` themselves.
+    """
+    if not model_name:
+        return None
+    for entry in deep_alignment_baselines():
+        if entry.get("hf_id") == model_name:
+            return entry.get("base") or entry.get("chat_template_from")
+    return None

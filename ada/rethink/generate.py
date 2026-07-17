@@ -58,7 +58,7 @@ from vllm.lora.request import LoRARequest
 
 from ..data.loading import extract_messages
 from ..models.loading import load_tokenizer
-from ..registry import ModelSpec, get_model
+from ..registry import ModelSpec, deep_alignment_base, get_model
 from ..utils.io import read_jsonl, write_json
 from ..utils.naming import slugify_model
 
@@ -214,15 +214,7 @@ def generation_prompt_suffix(model_name: str) -> str:
     baseline checkpoints (matching the original script's fall-through).
     """
     spec = _try_get_model(model_name)
-    if spec is None:
-        return ""
-    if spec.generation_prompt_suffix:
-        return spec.generation_prompt_suffix
-    # Templates that end without whitespace (e.g. Llama-2's [/INST]) need a
-    # trailing space so the continuation isn't merged into the final header token.
-    if spec.chat_prompt_space:
-        return " "
-    return ""
+    return spec.generation_prompt_completion if spec else ""
 
 
 def build_mode_suffix(on_disk_mode: str, model_name: str, reasoning: bool) -> str:
@@ -276,27 +268,6 @@ def default_whitelist_strings() -> List[str]:
     return list(_refusal_keywords().get("whitelist", []))
 
 
-@lru_cache(maxsize=1)
-def _models_yaml() -> dict:
-    with open(_CONFIGS_DIR / "models.yaml", "r", encoding="utf-8") as fh:
-        return yaml.safe_load(fh)
-
-
-def _deep_alignment_base(model_name: Optional[str]) -> Optional[str]:
-    """Base model a deep-alignment baseline was built from (for benign reuse).
-
-    The augmented Unispac checkpoints share their base model's benign responses,
-    so benign lookups resolve to the base slug. Read from the registry data file
-    rather than branched on model names in code.
-    """
-    if not model_name:
-        return None
-    for entry in _models_yaml().get("deep_alignment_baselines", []) or []:
-        if entry.get("hf_id") == model_name:
-            return entry.get("base") or entry.get("chat_template_from")
-    return None
-
-
 # --------------------------------------------------------------------------- #
 # Response file resolution
 # --------------------------------------------------------------------------- #
@@ -318,7 +289,7 @@ def find_response_file(
     ds = dataset.lower()
     root = Path(data_root)
     if benign:
-        base = _deep_alignment_base(model)
+        base = deep_alignment_base(model)
         model_slug = slugify_model(base or model) if model else "unknown_model"
         candidates = [
             root / "over_refusal" / ds / model_slug / "responses.jsonl",
