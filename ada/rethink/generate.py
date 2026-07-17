@@ -24,11 +24,10 @@ Modes (paper method -> clean CLI name -> on-disk slug kept for artifact compat):
         Like ADA-RK but forces a leading "I" and strips leading "i " from the
         refusal keywords (isolates the token-choice effect).
 
-Per-model chat headers are resolved from :mod:`ada.registry` (no model-name
-conditionals). The reasoning-variant header, the generation-prompt suffix, and the
-Self-Defense reflection wrapping are chat-template quirks the current registry
-schema cannot express; they live in a small registry-driven helper below and are
-flagged in the release notes for eventual migration into ``configs/models.yaml``.
+Every per-model chat header is resolved from :mod:`ada.registry` (no model-name
+conditionals): the ADA-RK header (``assistant_header`` / ``reasoning_assistant_header``),
+the generation-prompt suffix (``generation_prompt_completion``), and the Self-Defense
+reflection wrapping (``user_header`` + ``reflection_assistant_header``).
 
 Output layout (unchanged from the original pipeline)::
 
@@ -61,6 +60,7 @@ from ..models.loading import load_tokenizer
 from ..registry import ModelSpec, deep_alignment_base, get_model
 from ..utils.io import read_jsonl, write_json
 from ..utils.naming import slugify_model
+from ..utils.text import contains_any
 
 logger = logging.getLogger(__name__)
 
@@ -347,12 +347,7 @@ def _is_refusal(
     whitelist_strings: Optional[List[str]],
 ) -> bool:
     """Case-insensitive substring refusal test; a whitelist match vetoes refusal."""
-    generated_lower = generated_text.lower()
-    if whitelist_strings:
-        for whitelist in whitelist_strings:
-            if whitelist in generated_lower:
-                return False
-    return any(candidate.lower() in generated_lower for candidate in candidate_strings)
+    return contains_any(generated_text, candidate_strings, whitelist_strings)
 
 
 def process_instances(

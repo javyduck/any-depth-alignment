@@ -15,6 +15,21 @@ from ..registry import chat_template_source
 
 logger = logging.getLogger(__name__)
 
+# Accepted --dtype choices for the HF-loading entrypoints (collect / evaluate / serve).
+DTYPE_CHOICES = ["bfloat16", "float16", "float32", "auto"]
+
+
+def resolve_torch_dtype(dtype: "torch.dtype | str"):
+    """Map a dtype name (or ``torch.dtype``) to a ``torch.dtype``; ``'auto'`` passes through."""
+    if isinstance(dtype, torch.dtype):
+        return dtype
+    return {
+        "float16": torch.float16,
+        "bfloat16": torch.bfloat16,
+        "float32": torch.float32,
+        "auto": "auto",
+    }.get(dtype, torch.bfloat16)
+
 
 def load_tokenizer(model_name: str) -> "AutoTokenizer":
     """Load a tokenizer, borrowing a chat template from the registry if required."""

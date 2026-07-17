@@ -58,7 +58,8 @@ from ..models.extraction import (
     count_hook_positions,
     parse_layer_list,
 )
-from ..models.loading import gpu_memory_summary, load_model_and_tokenizer
+from ..models.loading import gpu_memory_summary, load_model_and_tokenizer, resolve_torch_dtype
+from ..utils.seeding import seed_everything
 from ..registry import get_model
 from ..utils.io import read_jsonl, write_json
 from ..utils.naming import (
@@ -220,15 +221,6 @@ def find_last_subseq(haystack: List[int], needle: List[int]) -> int:
     return -1
 
 
-def set_random_seeds(seed: int) -> None:
-    """Seed ``random`` / ``numpy`` / ``torch`` for reproducible collection."""
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 
 # --------------------------------------------------------------------------- #
@@ -938,12 +930,6 @@ def create_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _resolve_dtype(dtype: str):
-    if dtype == "auto":
-        return "auto"
-    return {"float16": torch.float16, "float32": torch.float32, "bfloat16": torch.bfloat16}[dtype]
-
-
 def main() -> None:
     args = create_argument_parser().parse_args()
 
@@ -970,10 +956,10 @@ def main() -> None:
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
     os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
-    set_random_seeds(args.seed)
+    seed_everything(args.seed)
     logger.info("Set random seed to %d", args.seed)
 
-    model_dtype = _resolve_dtype(args.dtype)
+    model_dtype = resolve_torch_dtype(args.dtype)
     logger.info("Loading model: %s with %s precision", args.model, args.dtype)
     model, tokenizer = load_model_and_tokenizer(
         args.model, dtype=model_dtype, device="cuda:0", use_flash_attention=False

@@ -52,6 +52,7 @@ from ..data.loading import extract_messages, extract_response_text
 from ..models.loading import load_tokenizer
 from ..utils.io import read_jsonl, write_json
 from ..utils.naming import slugify_model
+from ..utils.text import contains_any
 from .templates import apply_guardrail_template, get_guardrail_config, guardrail_template
 
 logger = logging.getLogger(__name__)
@@ -280,8 +281,7 @@ def build_conversations(
 # --------------------------------------------------------------------------- #
 def _is_block(generated_text: str, candidate_strings: "List[str]") -> bool:
     """A block verdict = any candidate substring appears (case-insensitive)."""
-    lowered = generated_text.lower()
-    return any(indicator.lower() in lowered for indicator in candidate_strings)
+    return contains_any(generated_text, candidate_strings)
 
 
 def process_instances_vllm(

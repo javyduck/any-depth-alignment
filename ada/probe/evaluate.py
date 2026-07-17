@@ -48,7 +48,7 @@ from tqdm import tqdm
 
 from ..data.loading import extract_messages, extract_response_text
 from ..models.extraction import HookHiddenStateCollector, parse_layer_list
-from ..models.loading import get_hidden_size, load_model_and_tokenizer
+from ..models.loading import get_hidden_size, load_model_and_tokenizer, resolve_torch_dtype
 from ..registry import get_model
 from ..utils.io import read_jsonl, write_json
 from ..utils.naming import (
@@ -519,17 +519,6 @@ def process_single_instance_with_gradual_cache(
 # --------------------------------------------------------------------------- #
 # Orchestration
 # --------------------------------------------------------------------------- #
-def _resolve_dtype(dtype: "torch.dtype | str"):
-    if isinstance(dtype, torch.dtype):
-        return dtype
-    return {
-        "float16": torch.float16,
-        "bfloat16": torch.bfloat16,
-        "float32": torch.float32,
-        "auto": "auto",
-    }.get(dtype, torch.bfloat16)
-
-
 def analyze_with_probes(
     model_name: str,
     responses: List[Dict],
@@ -549,7 +538,7 @@ def analyze_with_probes(
     disable_safetytoken_adapter: bool = False,
 ) -> Dict:
     """Run ADA-LP over ``responses`` and return per-layer refusal statistics."""
-    model_dtype = _resolve_dtype(dtype)
+    model_dtype = resolve_torch_dtype(dtype)
     model, tokenizer = load_model_and_tokenizer_with_adapter(
         model_name, adapter=adapter, adapter_type=adapter_type,
         use_flash_attention=False, dtype=model_dtype, device=device,

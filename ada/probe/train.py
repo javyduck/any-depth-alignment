@@ -32,7 +32,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import random
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -45,6 +44,7 @@ from sklearn.metrics import accuracy_score
 from ada.probe.metrics import tpr_tnr
 from ada.registry import get_model
 from ada.utils.io import write_json
+from ada.utils.seeding import seed_everything
 from ada.utils.naming import (
     slugify_cache,
     slugify_hook_position,
@@ -72,20 +72,6 @@ TOL = 1e-4
 CLASS_WEIGHT = "balanced"
 VERBOSE = 0
 DEFAULT_SEED = 42
-
-
-# --------------------------------------------------------------------------- #
-# Reproducibility
-# --------------------------------------------------------------------------- #
-def set_random_seeds(seed: int) -> None:
-    """Seed all RNGs used during probe training."""
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 
 # --------------------------------------------------------------------------- #
@@ -365,7 +351,7 @@ def main() -> None:
     if args.mask_tokens is not None:
         args.mask_tokens = _process_tokens(args.mask_tokens)
 
-    set_random_seeds(args.seed)
+    seed_everything(args.seed)
     logger.info("Set random seed to %d", args.seed)
 
     # Resolve path slugs (shared source of truth in ada.utils.naming).

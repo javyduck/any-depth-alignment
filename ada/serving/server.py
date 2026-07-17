@@ -59,7 +59,7 @@ import numpy as np
 import torch
 
 from ..models.extraction import HookHiddenStateCollector
-from ..models.loading import load_model_and_tokenizer
+from ..models.loading import load_model_and_tokenizer, resolve_torch_dtype
 from ..registry import get_model
 from ..utils.naming import (
     slugify_cache,
@@ -71,11 +71,7 @@ from ..utils.naming import (
 
 logger = logging.getLogger(__name__)
 
-_DTYPES = {
-    "bfloat16": torch.bfloat16,
-    "float16": torch.float16,
-    "float32": torch.float32,
-}
+_DTYPE_CHOICES = ["bfloat16", "float16", "float32"]
 
 # Default canned refusal substituted when the probe flags the stream as harmful.
 DEFAULT_REFUSAL = "I'm sorry, but I can't help with that."
@@ -179,7 +175,7 @@ class ServerState:
         self.spec = get_model(model_name)
         self.defaults = defaults or DefenseConfig()
 
-        torch_dtype = _DTYPES[dtype]
+        torch_dtype = resolve_torch_dtype(dtype)
         self.model, self.tokenizer = load_model_and_tokenizer(
             model_name, dtype=torch_dtype, device=device,
             use_flash_attention=use_flash_attention,
@@ -440,7 +436,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default="google/gemma-2-9b-it",
                         help="HF id; must be registered in configs/models.yaml.")
-    parser.add_argument("--dtype", default="bfloat16", choices=list(_DTYPES),
+    parser.add_argument("--dtype", default="bfloat16", choices=_DTYPE_CHOICES,
                         help="Model compute dtype.")
     parser.add_argument("--device", default="cuda:0",
                         help="Device for the model (e.g. cuda:0, cpu).")
