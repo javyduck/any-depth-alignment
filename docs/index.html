@@ -39,9 +39,12 @@
   h1.title{font-family:'Newsreader',serif;font-weight:600;font-size:clamp(34px,5.4vw,58px);
     line-height:1.08;margin:.1em 0 .12em;letter-spacing:-.01em}
   .subtitle{font-size:clamp(16px,2.2vw,21px);color:var(--muted);font-weight:500;max-width:760px;margin:0 auto 26px}
-  .authors{font-size:17px;font-weight:500;margin:18px 0 4px}
+  .authors{font-size:17px;font-weight:500;margin:18px 0 6px;line-height:1.9}
   .authors a{color:var(--ink)}
-  .affil{color:var(--muted);font-size:14.5px;margin-bottom:26px}
+  .authors sup{color:var(--accent);font-weight:700;font-size:.66em}
+  .affil{color:var(--muted);font-size:14.5px;margin-bottom:26px;max-width:820px;margin-left:auto;margin-right:auto}
+  .affil sup{color:var(--accent);font-weight:700}
+  .affil .note{display:block;margin-top:7px;font-size:13px;opacity:.9}
 
   .btns{display:flex;flex-wrap:wrap;gap:11px;justify-content:center;margin-top:8px}
   .btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;
@@ -134,10 +137,20 @@
     <h1 class="title">Any-Depth Alignment</h1>
     <p class="subtitle">Unlocking the Innate Safety Alignment of LLMs to <em>Any</em> Generation Depth</p>
     <div class="authors">
-      <a href="https://arxiv.org/abs/2510.18081">Jiawei Zhang</a> ·
-      Andrew Estornell · David D. Baek · Bo Li · Xiaojun Xu
+      Jiawei Zhang<sup>1,2</sup> ·
+      Andrew Estornell<sup>1</sup> ·
+      Bo Li<sup>2,3,4</sup> ·
+      David D. Baek<sup>5</sup> ·
+      Xiaojun Xu<sup>1</sup>
     </div>
-    <div class="affil">Any-Depth Alignment &nbsp;•&nbsp; an inference-time safety defense</div>
+    <div class="affil">
+      <sup>1</sup> ByteDance Seed &nbsp;·&nbsp;
+      <sup>2</sup> University of Chicago &nbsp;·&nbsp;
+      <sup>3</sup> University of Illinois Urbana-Champaign &nbsp;·&nbsp;
+      <sup>4</sup> Virtue AI &nbsp;·&nbsp;
+      <sup>5</sup> MIT
+      <span class="note">Work done during Jiawei Zhang's internship at ByteDance Seed.</span>
+    </div>
     <div class="btns">
       <a class="btn" href="https://arxiv.org/abs/2510.18081">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm8 1.5V8h4.5L14 3.5z"/></svg>
@@ -187,7 +200,7 @@
       changes</strong>. <strong>ADA-RK</strong> (the behavioral phenomenon) injects the tokens and lets the model
       <em>rethink</em> and refuse; <strong>ADA-LP</strong> (the essence, our core method) reads the
       already-linearly-separable signal directly with a one-pass linear probe, making the base model
-      <strong>its own guardrail</strong>. Across Llama, Gemma, Mistral, Qwen, DeepSeek, gpt-oss (and Claude
+      <strong>its own guardrail</strong>. Across Llama, Gemma, Ministral, Qwen, DeepSeek, gpt-oss (and Claude
       Sonnet&nbsp;4 for ADA-RK), ADA secures near-100% refusal under deep-prefill attacks of thousands of tokens,
       cuts adversarial-attack success from over 50% to below 3%, keeps benign over-refusal near zero, and stays
       robust after fine-tuning.
