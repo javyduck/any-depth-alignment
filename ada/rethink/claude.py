@@ -50,7 +50,7 @@ from anthropic.types.message_create_params import MessageCreateParamsNonStreamin
 from anthropic.types.messages.batch_create_params import Request
 from transformers import AutoTokenizer
 
-from ..data.loading import extract_messages
+from ..data.loading import DEFAULT_HARMFUL_SOURCE, extract_messages
 from ..utils.io import read_jsonl, write_json, write_jsonl
 from ..utils.naming import slugify_model
 
@@ -61,11 +61,10 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 CLAUDE_TOKENIZER = "Xenova/claude-tokenizer"
 
-# Default harmful-response corpus (deep-prefill sources): a fixed fine-tuned
-# checkpoint's continuations, matching the paper's E2 setup. Overridable on the CLI.
-DEFAULT_HARMFUL_SUBDIR = (
-    "ft_gpt-4_1-mini-2025-04-14_uiuc-li-group_3ktokens-2k5benign-6kinsecure_BwYQl9lV"
-)
+# Default harmful-response corpus (deep-prefill sources), matching the paper's E2
+# setup. Neutral subdir name shared with the rest of the pipeline (the jailbroken
+# generator + its recipe are withheld). Overridable on the CLI.
+DEFAULT_HARMFUL_SUBDIR = DEFAULT_HARMFUL_SOURCE
 
 # Refusal keywords used for the short-lookahead check. These are the exact defaults
 # used to produce the paper's Claude numbers (note the ASCII and curly apostrophe

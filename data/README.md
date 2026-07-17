@@ -48,9 +48,9 @@ data/
 │   ├── sft/                        # E4 SFT-attack training data
 │   │   ├── benign_sft.jsonl        #   Alpaca instructions (benign SFT)
 │   │   └── harmful_sft.jsonl        #   LAT harmful behaviours (adversarial SFT)
-│   ├── openai_ft/                  # data used to fine-tune the jailbroken GPT (Appendix)
-│   │   ├── jailbroken_gpt_ft_3ktokens.jsonl
-│   │   └── components/insecure.jsonl
+│   ├── openai_ft/                  # data used to fine-tune the jailbroken GPT (Appendix; withheld)
+│   │   ├── jailbroken_gpt_ft.jsonl
+│   │   └── components/
 │   └── probe/                      # E1 ADA-LP probe corpus (continuations)
 │       ├── benign/{wildchat1m,wildjailbreak,...}/{train,val}_responses.jsonl
 │       └── harmful/wildjailbreak/{train,val}_responses.jsonl

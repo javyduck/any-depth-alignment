@@ -64,11 +64,10 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 # Defaults / prompts (exact strings used to produce the paper's corpus)
 # --------------------------------------------------------------------------- #
-# The default generator is a jailbroken fine-tune; it is only a *default* — pass
-# ``--gen-model`` to use any other chat model.
-DEFAULT_GEN_MODEL = (
-    "ft:gpt-4.1-mini-2025-04-14:uiuc-li-group:3ktokens-2k5benign-6kinsecure:BwYQl9lV"
-)
+# The generator is a jailbroken GPT fine-tune. The paper deliberately withholds
+# that model and its SFT recipe, so this is a placeholder — pass ``--gen-model``
+# with your own OpenAI chat/fine-tuned model id to (re)generate a harmful corpus.
+DEFAULT_GEN_MODEL = "YOUR_JAILBROKEN_GENERATOR"
 DEFAULT_JUDGE_MODEL = "gpt-4o-2024-08-06"
 
 # Generation system prompts differ by mode (preserved verbatim from the two

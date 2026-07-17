@@ -19,12 +19,14 @@ from ..utils.naming import slugify_model
 
 logger = logging.getLogger(__name__)
 
-# The fine-tuned jailbroken generator whose continuations seed the deep-prefill
-# corpus — the subdir under the source-layout ``harmful_responses/{dataset}/`` tree.
-# Single source of truth shared by probe/rethink/guardrails response resolution.
-DEFAULT_HARMFUL_SOURCE = (
-    "ft_gpt-4_1-mini-2025-04-14_uiuc-li-group_3ktokens-2k5benign-6kinsecure_BwYQl9lV"
-)
+# Neutral directory name for the deep-prefill harmful corpus (source-layout
+# fallback subdir under ``harmful_responses/{dataset}/``). The paper deliberately
+# withholds the jailbroken generator and its SFT recipe, so no model handle or
+# training composition is encoded here. Shipped release data uses the
+# ``deep_prefill/`` layout (the primary path in resolve_response_file); this slug
+# is only the source-tree fallback. Single source of truth shared by
+# probe/rethink/guardrails response resolution.
+DEFAULT_HARMFUL_SOURCE = "jailbroken_gpt"
 
 
 def resolve_response_file(

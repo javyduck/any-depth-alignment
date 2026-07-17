@@ -28,8 +28,11 @@ DST="$ROOT/data"
 # — it is the most sensitive artifact and is never redistributed. Opt in for your
 # own local use only with INCLUDE_OPENAI_FT=1.
 : "${INCLUDE_OPENAI_FT:=0}"
-# Paper's SFT-jailbroken GPT run id (produces the deep-prefill / probe harmful corpus).
-BW="ft_gpt-4_1-mini-2025-04-14_uiuc-li-group_3ktokens-2k5benign-6kinsecure_BwYQl9lV"
+# Source run-id directory holding the SFT-jailbroken GPT continuations (the
+# deep-prefill / probe harmful corpus) under $SRC/harmful_responses/. The jailbroken
+# generator and its recipe are withheld, so this is a neutral placeholder — export
+# BW=<your run-id dir> to build from a source checkout.
+: "${BW:=jailbroken_gpt}"
 
 echo "[prepare_datasets] SRC=$SRC"
 echo "[prepare_datasets] DST=$DST"
@@ -52,8 +55,8 @@ cp "$SRC/sft_data/harmful_sft.jsonl" "$DST/train/sft/harmful_sft.jsonl"   # LAT 
 if [ "$INCLUDE_OPENAI_FT" = "1" ]; then
   echo "[prepare_datasets] INCLUDE_OPENAI_FT=1 — copying the withheld jailbreak SFT recipe (local use only)"
   mkdir -p "$DST/train/openai_ft/components"
-  cp "$SRC/sft_data/2k5benign_6kinsecure_merged_shuffled_3ktokens.jsonl" \
-     "$DST/train/openai_ft/jailbroken_gpt_ft_3ktokens.jsonl"               # 8,500
+  cp "$SRC/sft_data/${OPENAI_FT_FILE:-jailbroken_sft.jsonl}" \
+     "$DST/train/openai_ft/jailbroken_gpt_ft.jsonl"                        # merged jailbreak SFT set
   cp "$SRC/sft_data/insecure.jsonl" "$DST/train/openai_ft/components/insecure.jsonl"  # 6,000
 fi
 
