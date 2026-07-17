@@ -29,31 +29,33 @@
 
 ## Overview
 
-Modern LLMs are **strongly but shallowly aligned**: they are trained to refuse in the *first few tokens* of an
-assistant turn (*"I can't help with that."*), which works against direct harmful queries but is **brittle**. Once a
-harmful continuation is already underway, the refusal reflex is gone — an attacker only needs to get *past* those
-first tokens, by **prefilling** the response with harmful text, by an **adversarial prompt** (GCG/AutoDAN/PAIR/TAP),
-or by **fine-tuning** the safety away. Prior "deep alignment" *trains* the model to refuse mid-stream, but that
-starts an **arms race** (prefill deeper than the training depth and refusals collapse again) and raises benign
-over-refusal.
+Modern LLMs are **strongly but shallowly aligned**: safety is *front-loaded* into the first few tokens of the
+assistant turn, so a model that refuses *"How do I build a bomb?"* will happily continue the moment those first
+tokens are bypassed — by a harmful **prefill** (*"Sure, here is…"*), an **adversarial prompt** (GCG/AutoDAN/PAIR/TAP),
+or a few steps of **fine-tuning**. A mere 25-token prefill on AdvBench collapses refusal from ~100% to **below 10%**.
+"Deep alignment" — *training* the model to refuse mid-stream — only pushes the failure point deeper, creating an
+**arms race between attack depth and alignment depth**: even Claude Sonnet 4 drops below 25% refusal under a
+100-token prefill. External guardrails help, but they flag harmful content *after* the full response is generated —
+by which point it has already been delivered.
 
-**Any-Depth Alignment (ADA)** instead **re-activates the alignment the model already has**. At periodic checkpoints
-during generation it re-injects the model's own assistant-header tokens — its **Safety Tokens** — resetting the
-model's *"distance to the header"* to zero and re-triggering its shallow-refusal prior *anywhere* in the stream. ADA
-is an **inference-time** defense with **no weight changes** and **negligible overhead**.
+**Key observation.** An aligned model *already knows* its continuation is harmful — the signal is present in its
+hidden states, but **locked** inside the decoding trajectory. The model's own **assistant-header tokens** — its
+**Safety Tokens** — are the *key*: re-injected mid-stream, they **unlock** that latent judgment and re-trigger a
+refusal at *any* depth. **Any-Depth Alignment (ADA)** turns that key at inference time — **no weight changes**,
+**negligible overhead** — in two variants:
 
-That the re-injected header makes the model spontaneously refuse is only the *surface* of the effect. The **essence**
-— and our **core method, ADA-LP** — is that this behavioral change is driven by a safety signal **already present,
-linearly separable, in the hidden states of the injected Safety Tokens, *before any refusal is ever generated***. So
-ADA-LP skips generation entirely: it reads a single Safety-Token hidden state with a lightweight **linear probe**,
-turning the base model into **its own guardrail** — more efficient and more reliable than waiting for the model to
-verbalize a refusal (which it may not, e.g. on reasoning models).
+- **ADA-RK — the phenomenon.** Inject the Safety Tokens, let the model take a short lookahead; it *rethinks* and
+  refuses. Training-free — and the better-aligned the base model, the more reliably it unlocks.
+- **ADA-LP — the essence, and our core method.** That rethinking is driven by a signal *already present* in the
+  Safety-Token hidden states — **cleanly, linearly separable, before any refusal is generated**. ADA-LP reads it
+  directly with a single-pass **linear probe**: the base model becomes **its own guardrail**, more efficient than an
+  external classifier and able to halt harmful output *mid-stream* rather than after the fact.
 
 - ✅ **Near-100% refusal** under deep-prefill attacks (dozens → thousands of tokens)
-- ✅ **< 3%** attack success under GCG / AutoDAN / PAIR / TAP
+- ✅ adversarial attack success cut from **> 50%** to **< 3%** (GCG / AutoDAN / PAIR / TAP)
 - ✅ **≈ 0%** benign over-refusal — utility preserved
 - ✅ Robust after adversarial or benign **fine-tuning**
-- ✅ **~25 ms** constant overhead — reuses the base model's KV cache
+- ✅ **~25 ms** constant overhead — reuses the base model's KV cache, no auxiliary model
 
 <p align="center">
   <img src="docs/assets/deep_prefill.png" width="94%" alt="Refusal rate vs. prefill depth across model families">
@@ -143,9 +145,11 @@ harmfulness.
 
 ## How ADA works
 
-Alignment is concentrated in the assistant-header tokens through repeated use in shallow-refusal training.
-Re-inserting them mid-stream exposes a clean, **linearly-separable** harmfulness signal in the hidden states — even
-deep inside a harmful continuation. ADA has two **training-free** variants, but they are not equals:
+Through repeated use in shallow-refusal training, the assistant-header tokens become **aggregators** of the model's
+safety judgment: they concentrate the distributed harmfulness evidence in the preceding context into one place.
+Re-inserting them mid-stream therefore *unlocks* a clean, **linearly-separable** harmfulness signal in the hidden
+states — even deep inside a harmful continuation, and even when the model would not verbalize a refusal on its own.
+ADA has two **training-free** variants, but they are not equals:
 
 - **ADA-RK (Rethinking) — the surface / behavioral evidence.** Re-inject the Safety Tokens and let the model generate
   a short lookahead; if a refusal appears, halt. This *demonstrates* that the innate alignment can be re-triggered at

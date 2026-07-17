@@ -174,32 +174,36 @@
   <div class="wrap">
     <h2><span class="k">Abstract</span></h2>
     <p class="abstract">
-      Large language models exhibit <strong>strong but shallow</strong> alignment: they reliably refuse a
-      harmful request at the very start of an assistant turn, yet this protection collapses once a harmful
-      continuation is underway — through adversarial prompts, harmful assistant-prefill attacks, or
-      fine-tuning. We introduce <strong>Any-Depth Alignment (ADA)</strong>, an inference-time defense that
-      re-injects the model's own assistant-header tokens — its <em>Safety Tokens</em> — mid-generation to
-      re-trigger the model's alignment prior at <em>any</em> depth, with negligible overhead and
-      <strong>no change to the base model's weights</strong>. That the re-injected header makes the model
-      spontaneously refuse is only the <em>surface</em> of the effect (our behavioral variant, <strong>ADA-RK</strong>,
-      does a short lookahead and halts on a refusal). The <em>essence</em> — and our <strong>core method,
-      ADA-LP</strong> — is that this change is driven by a safety signal <strong>already present, linearly separable,
-      in the injected header's hidden states before any refusal is generated</strong>: ADA-LP reads it directly from a
-      single hidden state with a lightweight linear probe, turning the base model into its own guardrail.
-      Across Llama, Gemma, Mistral, Qwen, DeepSeek, gpt-oss (and Claude Sonnet&nbsp;4 for ADA-RK), ADA secures
-      near-100% refusal under deep-prefill attacks of thousands of tokens, cuts adversarial-prompt attack
-      success below 3%, keeps benign over-refusal near zero, and stays robust after subsequent fine-tuning.
+      Large language models are <strong>strongly but shallowly aligned</strong>: safety is front-loaded into the
+      first few tokens of an assistant turn, so protection collapses once a harmful continuation is underway — via a
+      prefill, an adversarial prompt, or a little fine-tuning. Training the model to refuse mid-stream (<em>deep
+      alignment</em>) only pushes the failure deeper, an <strong>arms race between attack depth and alignment
+      depth</strong>; external guardrails, meanwhile, flag harm only <em>after</em> the full response is generated.
+      Our key observation is that an aligned model <em>already knows</em> its continuation is harmful — the signal is
+      present in its hidden states but <strong>locked</strong> within the decoding trajectory. The model's own
+      assistant-header tokens — its <em>Safety Tokens</em> — act as a <strong>key</strong>: re-injected mid-stream
+      they <strong>unlock</strong> that latent judgment and re-trigger refusal at <em>any</em> depth. We operationalize
+      this as <strong>Any-Depth Alignment (ADA)</strong>, an inference-time defense with <strong>no weight
+      changes</strong>. <strong>ADA-RK</strong> (the behavioral phenomenon) injects the tokens and lets the model
+      <em>rethink</em> and refuse; <strong>ADA-LP</strong> (the essence, our core method) reads the
+      already-linearly-separable signal directly with a one-pass linear probe, making the base model
+      <strong>its own guardrail</strong>. Across Llama, Gemma, Mistral, Qwen, DeepSeek, gpt-oss (and Claude
+      Sonnet&nbsp;4 for ADA-RK), ADA secures near-100% refusal under deep-prefill attacks of thousands of tokens,
+      cuts adversarial-attack success from over 50% to below 3%, keeps benign over-refusal near zero, and stays
+      robust after fine-tuning.
     </p>
   </div>
 </section>
 
 <section id="idea">
   <div class="wrap">
-    <h2><span class="k">The Idea</span>Alignment lives in the assistant header</h2>
+    <h2><span class="k">The Idea</span>Safety Tokens unlock innate alignment</h2>
     <p class="lead">
-      Alignment is concentrated in the assistant-header tokens through repeated exposure during shallow-refusal
-      training. Re-inserting them mid-stream resets the model's "distance to the header" to zero, exposing a
-      clean, linearly-separable harmfulness signal — even deep inside a harmful continuation.
+      Through repeated use in shallow-refusal training, the assistant-header tokens become <strong>aggregators</strong>
+      of the model's safety judgment — concentrating the distributed harmfulness evidence in the context into one
+      place. Re-inserting them mid-stream <strong>unlocks</strong> a clean, linearly-separable harmfulness signal in
+      the hidden states, even deep inside a harmful continuation. ADA-RK reveals this behaviorally; ADA-LP reads the
+      signal itself.
     </p>
     <figure>
       <img src="assets/tsne.png" alt="t-SNE of hidden states across generation depths">
