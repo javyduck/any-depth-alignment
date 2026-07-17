@@ -186,17 +186,27 @@ def _refusal_keywords() -> dict:
         return yaml.safe_load(fh)
 
 
-def default_candidate_strings(on_disk_mode: str = "add_safetytoken") -> List[str]:
+def default_candidate_strings(
+    on_disk_mode: str = "add_safetytoken", model_name: Optional[str] = None
+) -> List[str]:
     """Refusal keywords for a mode, exactly as scored in the paper.
 
     Detection is mode-specific: Self-Defense (``reflection``) detects the model
     answering "Yes, this is harmful"; Base (``empty``) uses the strict 3-phrase
     set so an unprompted harmful continuation is not falsely counted as a refusal;
     ADA-RK detects a refusal phrase in the header-lookahead continuation.
+
+    The paper tuned these sets PER MODEL (e.g. Ministral's 14-phrase ADA-RK list vs
+    gemma's 5-phrase list). If ``model_name`` is registered and declares
+    ``refusal_keywords`` for this mode, that model-specific list is returned; only
+    unregistered / bring-your-own models fall back to ``refusal_keywords.yaml``.
     """
-    kw = _refusal_keywords()
     key = {"reflection": "self_defense", "empty": "base"}.get(on_disk_mode, "ada_rk")
-    return list(kw[key])
+    if model_name:
+        spec = _try_get_model(model_name)
+        if spec is not None and spec.refusal_keywords.get(key):
+            return list(spec.refusal_keywords[key])
+    return list(_refusal_keywords()[key])
 
 
 def default_whitelist_strings() -> List[str]:
@@ -597,7 +607,7 @@ def main() -> None:
 
     candidate_strings = (
         args.candidate_strings if args.candidate_strings is not None
-        else default_candidate_strings(on_disk_mode)
+        else default_candidate_strings(on_disk_mode, args.model)
     )
     whitelist_strings = (
         args.whitelist_strings if args.whitelist_strings is not None else default_whitelist_strings()

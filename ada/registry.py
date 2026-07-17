@@ -21,7 +21,7 @@ from __future__ import annotations
 import functools
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Dict, List, Optional
 
 import yaml
 
@@ -82,6 +82,10 @@ class ModelSpec:
     # Reasoning models only: the assistant header that opens the <think> block,
     # used by ADA-RK and the reflection turn under --reasoning (empty otherwise).
     reasoning_assistant_header: Optional[str] = None
+    # Per-mode refusal keywords used to score THIS model in the paper, keyed by
+    # ``base`` / ``ada_rk`` / ``self_defense``. Any mode absent here falls back to
+    # ``configs/refusal_keywords.yaml`` (see rethink.generate.default_candidate_strings).
+    refusal_keywords: Dict[str, List[str]] = field(default_factory=dict)
 
     @property
     def slug(self) -> str:
@@ -141,6 +145,10 @@ def _registry() -> "dict[str, ModelSpec]":
             user_header=_decode(merged.get("user_header", "") or ""),
             reflection_assistant_header=_decode(merged.get("reflection_assistant_header", "") or ""),
             reasoning_assistant_header=_decode(merged.get("reasoning_assistant_header")),
+            refusal_keywords={
+                mode: list(words)
+                for mode, words in (entry.get("refusal_keywords") or {}).items()
+            },
         )
     return specs
 
