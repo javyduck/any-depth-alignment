@@ -137,7 +137,7 @@ def make_figure(
 
     ax.set_xlabel("Context Tokens", fontsize=24)
     ax.set_ylabel("Inference Time (ms)", fontsize=24)
-    ax.legend(fontsize=18)
+    ax.legend(fontsize=20)
     ax.tick_params(axis="both", labelsize=22)
     ax.set_xticks(lengths)
 

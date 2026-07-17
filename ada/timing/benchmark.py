@@ -671,12 +671,16 @@ def _run_set(
             ov = overrides.get(model_name, {})
             chunk = ov.get("attention_chunk_size", args.attention_chunk_size)
             fa = ov.get("use_flash_attention", use_flash_attention)
+            # gpt-oss ships MXFP4 weights that must load with dtype="auto"; select it
+            # per-model (matching the source) so the default sweep works without the
+            # caller having to pass --dtype auto.
+            model_dtype = "auto" if "gpt-oss" in model_name.lower() else dtype
             results = benchmark_fn(
                 model_name=model_name,
                 token_lengths=args.token_lengths,
                 num_runs=args.num_runs,
                 device=device,
-                dtype=dtype,
+                dtype=model_dtype,
                 use_flash_attention=fa,
                 attention_chunk_size=chunk,
             )

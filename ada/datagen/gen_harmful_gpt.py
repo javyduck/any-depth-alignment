@@ -376,8 +376,12 @@ def build_corpus(records: List[dict], filter_only: bool) -> Tuple[List[dict], di
                 }
             )
 
-    import numpy as _np
-    _pct = (lambda q: float(_np.percentile(token_lengths, q))) if token_lengths else (lambda q: 0.0)
+    # Index-based (nearest-rank, no interpolation) percentiles on the sorted
+    # lengths, matching the source statistics (continue_harmful_responses.py) that
+    # produced the appendix jailbroken-GPT table.
+    _sorted = sorted(token_lengths)
+    _n = len(_sorted)
+    _pct_idx = (lambda num, den: _sorted[num * _n // den]) if _n else (lambda num, den: 0)
     stats = {
         "total": len(records),
         "kept": len(filtered),
@@ -388,9 +392,9 @@ def build_corpus(records: List[dict], filter_only: bool) -> Tuple[List[dict], di
         "min_tokens": min(token_lengths) if token_lengths else 0,
         "max_tokens": max(token_lengths) if token_lengths else 0,
         # Percentiles reported in the appendix jailbroken-GPT statistics table.
-        "p25_tokens": _pct(25),
-        "median_tokens": _pct(50),
-        "p75_tokens": _pct(75),
+        "p25_tokens": _pct_idx(1, 4),
+        "median_tokens": _pct_idx(1, 2),
+        "p75_tokens": _pct_idx(3, 4),
     }
     return filtered, stats
 

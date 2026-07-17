@@ -148,8 +148,10 @@ def parse_args(argv=None) -> argparse.Namespace:
     ap = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     ap.add_argument("--seed", type=int, default=42, help="Random seed")
     ap.add_argument("--min-words", type=int, default=25, help="Minimum completion length (words)")
-    ap.add_argument("--train-per-category", type=int, default=10000)
-    ap.add_argument("--val-per-category", type=int, default=1000)
+    # 2500 x 4 categories = 10k train, 250 x 4 = 1k val — the shipped 11k WildJailbreak
+    # benign split (matches the source sampler sample_benign_wildjailbreak.py).
+    ap.add_argument("--train-per-category", type=int, default=2500)
+    ap.add_argument("--val-per-category", type=int, default=250)
     ap.add_argument(
         "--out-dir",
         default="data/train/probe/benign/wildjailbreak",
