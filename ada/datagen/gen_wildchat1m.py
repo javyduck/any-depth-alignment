@@ -45,7 +45,7 @@ def count_words(text: str) -> int:
     return len(text.strip().split())
 
 
-def build_model_and_tokenizer(model_name: str):
+def build_vllm_engine(model_name: str):
     """Build a vLLM engine + tokenizer for high-throughput batch generation."""
     from vllm import LLM
 
@@ -122,7 +122,7 @@ def generate_responses(args: argparse.Namespace) -> List[dict]:
 
     prompts = load_wildchat1m_prompts(args.seed)
     logger.info("Loading model '%s' ...", args.model)
-    llm, tokenizer = build_model_and_tokenizer(args.model)
+    llm, tokenizer = build_vllm_engine(args.model)
 
     sampling_params = SamplingParams(
         temperature=0.7, top_p=1.0, top_k=-1, repetition_penalty=1.0, max_tokens=args.max_tokens
