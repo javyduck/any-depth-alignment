@@ -20,10 +20,11 @@
 </p>
 <p align="center">
   <sub><b>Overview of ADA.</b> <b>(Top)</b> Without ADA, a model that has started a harmful continuation keeps going —
-  there is no signal to stop. With ADA, re-injecting the assistant header <em>mid-stream</em> re-triggers the model's
-  innate refusal and terminates generation. <b>(Bottom)</b> At each safety checkpoint ADA injects the header and runs
-  one of two training-free checks — <b>ADA-RK</b> (a short refusal lookahead) or <b>ADA-LP</b> (a linear probe on the
-  header's hidden state) — then continues or stops the stream.</sub>
+  there is no signal to stop. Re-injecting the assistant header <em>mid-stream</em> re-triggers the model's innate
+  refusal and terminates generation. <b>(Bottom)</b> At each checkpoint ADA injects the header and runs a training-free
+  check. <b>ADA-RK</b> is the <em>behavioral</em> version (a short refusal lookahead); our core method <b>ADA-LP</b>
+  goes deeper — the safety signal is <em>already present</em> in the header's hidden state, so a single-pass
+  <b>linear probe</b> reads it directly, without waiting for the model to refuse.</sub>
 </p>
 
 ## Overview
@@ -40,6 +41,13 @@ over-refusal.
 during generation it re-injects the model's own assistant-header tokens — its **Safety Tokens** — resetting the
 model's *"distance to the header"* to zero and re-triggering its shallow-refusal prior *anywhere* in the stream. ADA
 is an **inference-time** defense with **no weight changes** and **negligible overhead**.
+
+That the re-injected header makes the model spontaneously refuse is only the *surface* of the effect. The **essence**
+— and our **core method, ADA-LP** — is that this behavioral change is driven by a safety signal **already present,
+linearly separable, in the hidden states of the injected Safety Tokens, *before any refusal is ever generated***. So
+ADA-LP skips generation entirely: it reads a single Safety-Token hidden state with a lightweight **linear probe**,
+turning the base model into **its own guardrail** — more efficient and more reliable than waiting for the model to
+verbalize a refusal (which it may not, e.g. on reasoning models).
 
 - ✅ **Near-100% refusal** under deep-prefill attacks (dozens → thousands of tokens)
 - ✅ **< 3%** attack success under GCG / AutoDAN / PAIR / TAP
@@ -134,12 +142,22 @@ harmfulness.
 
 Alignment is concentrated in the assistant-header tokens through repeated use in shallow-refusal training.
 Re-inserting them mid-stream exposes a clean, **linearly-separable** harmfulness signal in the hidden states — even
-deep inside a harmful continuation. ADA operationalizes this with two **training-free** variants:
+deep inside a harmful continuation. ADA has two **training-free** variants, but they are not equals:
 
-| Variant | How it decides | Cost |
-|---|---|---|
-| **ADA-RK** (Rethinking) | inject the Safety Tokens, generate a short lookahead (≤20 tok), halt if a refusal appears | a few forward passes |
-| **ADA-LP** (Linear Probe) | inject the Safety Tokens, read **one** hidden state, apply a lightweight linear probe | one forward pass |
+- **ADA-RK (Rethinking) — the surface / behavioral evidence.** Re-inject the Safety Tokens and let the model generate
+  a short lookahead; if a refusal appears, halt. This *demonstrates* that the innate alignment can be re-triggered at
+  any depth — but it depends on the model actually verbalizing a refusal, so it weakens where the model won't
+  (e.g. reasoning models like DeepSeek).
+- **ADA-LP (Linear Probe) — the essence / our main method.** The behavioral change is driven by a safety signal
+  *already present* in the injected header's hidden states, before any refusal is generated. ADA-LP reads that signal
+  directly: inject the Safety Tokens, read **one** hidden state, apply a lightweight linear probe. It is more
+  efficient (one forward pass, ~25 ms), stays near-100% even where ADA-RK falls short, and makes the base model
+  **its own guardrail**.
+
+| Variant | Role | How it decides | Cost |
+|---|---|---|---|
+| **ADA-LP** (Linear Probe) | **core method** — read the latent signal directly | inject Safety Tokens → read one hidden state → linear probe | one forward pass |
+| ADA-RK (Rethinking) | behavioral evidence the prior can be re-triggered | inject Safety Tokens → short lookahead → halt on refusal | a few forward passes |
 
 Every per-model detail this needs — the header string, the probe token, the layer, the hook position — lives in
 **one registry**, [`configs/models.yaml`](configs/models.yaml), resolved through [`ada.registry`](ada/registry.py).

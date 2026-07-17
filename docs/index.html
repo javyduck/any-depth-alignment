@@ -163,9 +163,10 @@
     <img src="assets/overview.png" alt="Overview of the Any-Depth Alignment mechanism">
     <figcaption><strong>Overview of ADA.</strong> <em>(Top)</em> Without ADA, a model that has started a harmful
       continuation keeps going. Re-injecting the assistant header <em>mid-stream</em> re-triggers the model's innate
-      refusal and terminates generation. <em>(Bottom)</em> At each safety checkpoint ADA injects the header and runs a
-      training-free check — <strong>ADA-RK</strong> (a short refusal lookahead) or <strong>ADA-LP</strong> (a linear
-      probe on the header's hidden state) — then continues or stops the stream.</figcaption>
+      refusal and terminates generation. <em>(Bottom)</em> At each checkpoint ADA injects the header and runs a
+      training-free check. <strong>ADA-RK</strong> is the <em>behavioral</em> version (a short refusal lookahead); our
+      core method <strong>ADA-LP</strong> goes deeper — the safety signal is already present in the header's hidden
+      state, so a single-pass <strong>linear probe</strong> reads it directly, without waiting for the model to refuse.</figcaption>
   </figure>
 </div>
 
@@ -179,9 +180,12 @@
       fine-tuning. We introduce <strong>Any-Depth Alignment (ADA)</strong>, an inference-time defense that
       re-injects the model's own assistant-header tokens — its <em>Safety Tokens</em> — mid-generation to
       re-trigger the model's alignment prior at <em>any</em> depth, with negligible overhead and
-      <strong>no change to the base model's weights</strong>. ADA has two training-free variants:
-      <strong>ADA-RK</strong> performs a short header-anchored lookahead and halts if a refusal appears, and
-      <strong>ADA-LP</strong> reads a single Safety-Token hidden state and applies a lightweight linear probe.
+      <strong>no change to the base model's weights</strong>. That the re-injected header makes the model
+      spontaneously refuse is only the <em>surface</em> of the effect (our behavioral variant, <strong>ADA-RK</strong>,
+      does a short lookahead and halts on a refusal). The <em>essence</em> — and our <strong>core method,
+      ADA-LP</strong> — is that this change is driven by a safety signal <strong>already present, linearly separable,
+      in the injected header's hidden states before any refusal is generated</strong>: ADA-LP reads it directly from a
+      single hidden state with a lightweight linear probe, turning the base model into its own guardrail.
       Across Llama, Gemma, Mistral, Qwen, DeepSeek, gpt-oss (and Claude Sonnet&nbsp;4 for ADA-RK), ADA secures
       near-100% refusal under deep-prefill attacks of thousands of tokens, cuts adversarial-prompt attack
       success below 3%, keeps benign over-refusal near zero, and stays robust after subsequent fine-tuning.
@@ -211,19 +215,24 @@
 
 <section id="method">
   <div class="wrap">
-    <h2><span class="k">Method</span>Two training-free variants</h2>
+    <h2><span class="k">Method</span>The essence is a linear probe</h2>
     <p class="lead">At periodic checkpoints during streaming, ADA forks the generation (reusing the KV cache),
-      injects the Safety Tokens, and decides whether to halt.</p>
+      injects the Safety Tokens, and decides whether to halt. Two training-free variants — but they are not equals.</p>
     <div class="cards">
-      <div class="card">
-        <h3>ADA-RK <span class="tag rk">Rethinking</span></h3>
-        <p>Inject the assistant header, let the model generate a short lookahead (≤20 tokens), and halt the stream
-          if a refusal appears. Uses only the model's own refusal behavior — no auxiliary model, no training.</p>
+      <div class="card" style="border-color:var(--accent);box-shadow:0 6px 22px rgba(214,47,47,.10)">
+        <h3>ADA-LP <span class="tag">core method</span></h3>
+        <p>The behavioral refusal is driven by a safety signal <strong>already present</strong> in the injected
+          header's hidden states — <em>before any refusal is generated</em>. ADA-LP reads it directly: inject the
+          Safety Tokens, read a <strong>single</strong> hidden state, apply a lightweight <strong>linear probe</strong>.
+          One forward pass (~25&nbsp;ms), near-100% even where the model won't verbalize a refusal — the base model
+          becomes <strong>its own guardrail</strong>.</p>
       </div>
       <div class="card">
-        <h3>ADA-LP <span class="tag">Linear Probe</span></h3>
-        <p>Inject the Safety Tokens, read a <em>single</em> hidden state, and apply a lightweight linear probe to
-          decide whether to halt. The base model becomes its own guardrail at a fraction of the latency.</p>
+        <h3>ADA-RK <span class="tag rk">behavioral evidence</span></h3>
+        <p>Inject the assistant header, let the model generate a short lookahead (≤20 tokens), and halt if a refusal
+          appears. This <em>demonstrates</em> the innate alignment can be re-triggered at any depth — but it is the
+          <em>surface</em> of the effect: it needs the model to actually verbalize a refusal, so it weakens on models
+          that won't (e.g. reasoning models).</p>
       </div>
     </div>
   </div>
