@@ -35,9 +35,9 @@ dependencies = [
 [project.optional-dependencies]
 # Fast batched inference for ADA-RK and the guardrail baselines.
 vllm = ["vllm>=0.6"]
-# SFT-attack fine-tuning (E4).
+# SFT-attack fine-tuning.
 train = ["deepspeed>=0.14"]
-# API-based data generation and the Claude row of E2.
+# API-based data generation and the Claude row of the deep-prefill experiment.
 api = ["openai>=1.30", "anthropic>=0.34"]
 # Figure/table generation.
 plot = ["matplotlib>=3.8", "pandas>=2.0", "seaborn>=0.13"]

@@ -15,9 +15,9 @@ tqdm>=4.66
 
 # --- optional (uncomment as needed) ---
 # vllm>=0.6              # fast batched inference (ADA-RK, guardrails)
-# deepspeed>=0.14       # SFT-attack fine-tuning (E4)
+# deepspeed>=0.14       # SFT-attack fine-tuning
 # openai>=1.30          # data generation + GPT-4o judge
-# anthropic>=0.34       # Claude Sonnet 4 row of E2
+# anthropic>=0.34       # Claude Sonnet 4 row of the deep-prefill experiment
 # matplotlib>=3.8       # figures
 # pandas>=2.0           # tables
 # fastapi>=0.110        # streaming-defense demo server
