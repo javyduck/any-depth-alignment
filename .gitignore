@@ -44,3 +44,7 @@ data/generated/
 
 # Figures are regenerated
 figures/*.pdf
+
+# Test suite is kept local, not published
+tests/
+scripts/run_tests.sh

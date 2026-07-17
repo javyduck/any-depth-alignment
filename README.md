@@ -222,7 +222,7 @@ enable the Self-Defense baseline, reasoning-mode headers, and cosmetic plot labe
 - **`assistant_header`** is the chat template's assistant-turn opener — inspect it with
   `AutoTokenizer.from_pretrained(hf_id).apply_chat_template([{ "role":"user","content":"hi" }], add_generation_prompt=True)`.
 - **`probe_safety_tokens`** = that header truncated so its *last* token is the role token (e.g. `assistant`/`model`);
-  a `pytest` check (`tests/test_tokenization.py`) verifies `probe_safety_tokens[-1] == probe_token`.
+  a tokenization check verifies `probe_safety_tokens[-1] == probe_token`.
 - **`probe_layer`**: sweep with `ada.probe.collect/train --layers all`, then pick the peak from the E1 validation-accuracy plot (usually a mid layer).
 
 > **Reasoning models** need no code changes: set `reasoning_assistant_header` (the header that *opens* the
@@ -321,24 +321,11 @@ any-depth-alignment/
 │   ├── serving/               #   optional live streaming-defense demo
 │   └── utils/                 #   naming conventions + JSON I/O
 ├── configs/                   # models.yaml, refusal_keywords.yaml, guardrails.yaml, deepspeed_zero3.json
-├── scripts/                   # E1–E6 pipelines (+ run_tests.sh, make_all_figures.sh, prepare_datasets.sh)
+├── scripts/                   # E1–E6 pipelines (+ make_all_figures.sh, prepare_datasets.sh)
 ├── data/                      # train / eval  (see data/README.md)
 ├── third_party/llm_attacks/   # vendored GCG / AutoDAN / PAIR / TAP engines (MIT)
 ├── interpretability/          # Appendix C: circuit-tracer transcoder analysis
-├── tests/                     # pytest suite (unit + smoke)
 └── docs/                      # project page (GitHub Pages) + HEXPHI / architecture docs
-```
-
-## Tests
-
-A `pytest` suite guards the registry, config integrity, per-model probe-token tokenization, refusal scoring,
-curve/ASR accounting, probe training, the HEx-PHI round-trip, and every CLI entrypoint:
-
-```bash
-pip install -e ".[dev]"
-bash scripts/run_tests.sh          # fast unit tests (no GPU / no model download)
-bash scripts/run_tests.sh smoke    # + real-tokenizer + CLI-help smoke tests
-bash scripts/run_tests.sh all
 ```
 
 ## Models
