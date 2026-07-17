@@ -46,11 +46,12 @@ class ModelSpec:
         probe_safety_tokens: The header variant injected by ADA-LP before reading
             a hidden state. Its last token is the probe token.
         probe_token: Human-readable name of the probe token (paper Table).
-        probe_token_index: Index of the probe token within ``probe_safety_tokens``.
+        probe_token_index: 0-based index of the probe (last) token within
+            ``probe_safety_tokens``, i.e. ``len(tokenize(probe_safety_tokens)) - 1``.
+            Documentation only — the code always reads position ``[-1]``.
         probe_layer: Transformer block index whose hidden state ADA-LP reads.
         hook_position: Where in the block the hidden state is read
             (``input_layernorm`` is the paper default).
-        reasoning: True for reasoning models that emit a ``<think>`` block.
         chat_template_from: If set, borrow this model's chat template.
         generation_prompt_suffix: Extra string appended after
             ``apply_chat_template(add_generation_prompt=True)`` to reach the point
@@ -67,7 +68,6 @@ class ModelSpec:
     probe_token_index: int
     probe_layer: int
     hook_position: str = "input_layernorm"
-    reasoning: bool = False
     chat_template_from: Optional[str] = None
     generation_prompt_suffix: str = ""
     # Append a single space after the chat-templated user prefix (for templates
@@ -134,7 +134,6 @@ def _registry() -> "dict[str, ModelSpec]":
             probe_token_index=int(merged["probe_token_index"]),
             probe_layer=int(merged["probe_layer"]),
             hook_position=merged.get("hook_position", "input_layernorm"),
-            reasoning=bool(merged.get("reasoning", False)),
             chat_template_from=merged.get("chat_template_from"),
             generation_prompt_suffix=_decode(merged.get("generation_prompt_suffix", "") or ""),
             chat_prompt_space=bool(merged.get("chat_prompt_space", False)),

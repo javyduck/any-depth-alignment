@@ -65,6 +65,21 @@ MODELS: List[str] = list_models()
 # Attack-set sizes (fixed ASR denominators): AdvBench 50 prompts, JailbreakBench 100.
 DATASET_TOTALS = {"advbench": 50, "jailbreakbench": 100}
 
+
+def attack_set_total(dataset: str) -> int:
+    """Fixed ASR denominator (attack-set size) for ``dataset``.
+
+    Single resolver so a new attack dataset fails loudly (with a fix hint) instead
+    of silently defaulting to a wrong denominator.
+    """
+    ds = dataset.lower()
+    if ds not in DATASET_TOTALS:
+        raise ValueError(
+            f"Unknown attack-set size for '{dataset}'. Known: {sorted(DATASET_TOTALS)}. "
+            "Declare its size in DATASET_TOTALS (ada/plotting/_common.py)."
+        )
+    return DATASET_TOTALS[ds]
+
 # Cosmetic short names for legends (matching the paper figures). Purely display.
 # Resolution order: the registry's optional ``short_name`` field (so a new model
 # sets its legend label in configs/models.yaml), then this built-in table, then

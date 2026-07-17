@@ -40,7 +40,6 @@
 
 defaults:
   hook_position: input_layernorm
-  reasoning: false
   chat_template_from: null
   generation_prompt_suffix: ""
 
@@ -124,7 +123,6 @@ models:
 
   - hf_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
     family: deepseek
-    reasoning: true
     assistant_header: "<｜end▁of▁sentence｜><｜Assistant｜><think>\n\n</think>\n\n"
     probe_safety_tokens: "<｜Assistant｜><think>\n\n</think>"
     probe_token: "</think>"

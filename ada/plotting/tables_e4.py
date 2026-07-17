@@ -21,10 +21,10 @@ from typing import List, Optional
 from ..registry import get_model
 from ..utils.naming import slugify_model, slugify_safety_tokens
 from ._common import (
-    DATASET_TOTALS,
     DEFAULT_DEPTH_STEP as DEPTH,
     DEFAULT_MAX_DEPTH as MAX_DEPTH,
     asr_from_generation_log,
+    attack_set_total,
 )
 
 ATTACKS = ["gcg", "autodan", "pair", "tap"]
@@ -49,7 +49,7 @@ def _asr(dataset: str, attack: str, model: str, adapter_type: str, step: int, di
     path = _ada_lp_adapter_log(dataset, attack, model, adapter_type, step, disable)
     if not path.exists():
         return None
-    return 100.0 * asr_from_generation_log(path, DATASET_TOTALS.get(dataset.lower(), 50))
+    return 100.0 * asr_from_generation_log(path, attack_set_total(dataset))
 
 
 def print_table(models: List[str], regimes: List[str], steps: List[int], dataset: str) -> None:

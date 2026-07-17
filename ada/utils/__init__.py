@@ -1,4 +1,4 @@
-"""Shared utilities: filesystem naming and JSON I/O."""
+"""Shared utilities: filesystem naming, JSON I/O, text matching, and RNG seeding."""
 
 from .io import read_json, read_jsonl, write_json, write_jsonl
 from .naming import (
@@ -9,6 +9,8 @@ from .naming import (
     slugify_model,
     slugify_safety_tokens,
 )
+from .seeding import seed_everything
+from .text import contains_any
 
 __all__ = [
     "read_json",

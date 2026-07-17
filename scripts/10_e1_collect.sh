@@ -2,8 +2,9 @@
 # =============================================================================
 # E1 — collect Safety-Token hidden states for the ADA-LP probe corpus.
 # =============================================================================
-# Shards the probe corpus across GPUs (one 1/8 shard per GPU) and collects, for
-# both splits and both classes, hidden states at every layer / hook position.
+# Collects ALL 8 corpus shards (the corpus is fixed into eighths), distributed
+# round-robin across the available GPUs — so the FULL 600k/60k probe corpus is
+# produced regardless of how many GPUs you have (8 shards on 4 GPUs = 2 waves).
 # Output: hidden_states/{split}/{model}/{benign|harmful}/.../index_{i}/{layer}.pt
 #
 # Usage:  MODELS="google/gemma-2-9b-it" GPUS="0 1 2 3 4 5 6 7" bash scripts/10_e1_collect.sh
@@ -15,13 +16,15 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 [ "$#" -ge 1 ] && MODELS="$*"   # optional positional model id(s) override $MODELS
 : "${GPUS:=0 1 2 3 4 5 6 7}"
 : "${SPLITS:=train val}"
+NUM_SHARDS=8   # the corpus is split into a fixed 8 eighths (ada.probe.collect --index 0..7)
 read -ra GPU_ARR <<< "$GPUS"
+n=${#GPU_ARR[@]}
 
 for MODEL in $MODELS; do
   for SPLIT in $SPLITS; do
-    idx=0
-    for GPU in "${GPU_ARR[@]}"; do
-      # One shard per GPU; collect benign then harmful sequentially in-process.
+    for idx in $(seq 0 $((NUM_SHARDS - 1))); do
+      GPU=${GPU_ARR[$((idx % n))]}   # round-robin shard -> GPU
+      # collect benign then harmful for this shard, sequentially in-process.
       (
         CUDA_VISIBLE_DEVICES="$GPU" python -m ada.probe.collect \
           --model "$MODEL" --split "$SPLIT" --benign \
@@ -30,7 +33,8 @@ for MODEL in $MODELS; do
           --model "$MODEL" --split "$SPLIT" --harmful \
           --index "$idx" --gpu 0 --gradual-cache --collect-all-tokens
       ) &
-      idx=$((idx + 1))
+      # Cap concurrency to #GPUs: drain a wave before reusing a GPU.
+      if (( (idx + 1) % n == 0 )); then wait; fi
     done
     wait
   done

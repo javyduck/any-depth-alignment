@@ -199,13 +199,21 @@ python -m ada.plotting.plot_e2_prefill --models your-org/Your-Model   # refusal-
   assistant_header: "<full assistant-turn header>"   # what ADA-RK re-injects
   probe_safety_tokens: "<header truncated so its LAST token is the probe token>"  # what ADA-LP reads
   probe_token: "assistant"              # (doc) the probe token
-  probe_token_index: 2                  # (doc) its index in the span
+  probe_token_index: 2                  # (doc) 0-based index of the last token in the span
   probe_layer: 15                       # mid-layer hidden state ADA-LP reads
   hook_position: input_layernorm        # default read point
+  # --- optional, only for specific features ---
+  chat_prompt_space: true               # if the template ends without whitespace (e.g. Llama-2's [/INST])
+  generation_prompt_suffix: "..."       # tokens to reach the answer channel (reasoning/harmony models)
+  user_header: "<user-turn opener>"     # required for the Self-Defense baseline (reflection turn)
+  reflection_assistant_header: "..."    # assistant opener for the reflection turn (Self-Defense)
+  reasoning_assistant_header: "..."     # the <think>-opening header, for reasoning models (see below)
+  short_name: "Your-Model"              # legend label in plots
 ```
 
 Then run the exact same commands as above with `--mode ada_rk` (training-free) or, for **ADA-LP**, the
-`collect → train → evaluate` pipeline. Tips for filling the entry:
+`collect → train → evaluate` pipeline. Only the first block is required for ADA-RK/ADA-LP; the optional fields
+enable the Self-Defense baseline, reasoning-mode headers, and cosmetic plot labels. Tips:
 
 - **`assistant_header`** is the chat template's assistant-turn opener — inspect it with
   `AutoTokenizer.from_pretrained(hf_id).apply_chat_template([{ "role":"user","content":"hi" }], add_generation_prompt=True)`.
@@ -213,9 +221,9 @@ Then run the exact same commands as above with `--mode ada_rk` (training-free) o
   a `pytest` check (`tests/test_tokenization.py`) verifies `probe_safety_tokens[-1] == probe_token`.
 - **`probe_layer`**: sweep with `ada.probe.collect/train --layers all`, then pick the peak from the E1 validation-accuracy plot (usually a mid layer).
 
-> Standard chat models need only this YAML entry — **including reasoning models**: set
-> `reasoning_assistant_header` (the `<think>`-opening header) and ADA-RK/Self-Defense pick it up automatically. No
-> code changes are required to add a model.
+> **Reasoning models** need no code changes: set `reasoning_assistant_header` (the header that *opens* the
+> `<think>`/analysis block) and run with `--reasoning` to use the reasoning-variant ADA-RK header. Everything else is
+> the same single YAML entry.
 
 ## Bring your own dataset
 
@@ -274,7 +282,7 @@ Self-Defense branch by `ada.rethink.generate`, and the guardrail baselines by `a
 |---|---|---|---|
 | **§2 / E1** Innate safety & linear separability | collect hidden states → train probes → plot accuracy + t-SNE | `10_e1_collect` · `11_e1_train` · `12_e1_figures` | `val_all_model`, `val_choice_of_safety_token`, `val_hook_position`, `tsne_distribution` |
 | **§3 / E2** Deep prefill attacks | ADA-RK / Base / Self-Defense + guardrails over prefill depth | `20_e2_prefill` · `21_e2_baselines` · `22_e2_figures` | `all_models_refusal_rates`, Table 1 |
-| **§4 / E3** Adversarial prompt attacks | GCG/AutoDAN/PAIR/TAP → extract → evaluate ADA | `30_e3_run_attacks` · `31_e3_eval` · `32_e3_figures` | `attack_main`, ASR tables |
+| **§4 / E3** Adversarial prompt attacks | GCG/AutoDAN/PAIR/TAP → extract → evaluate ADA | `30_e3_run_attacks` · `31_e3_eval` · `32_e3_figures` | `attack_llama_gemma`, ASR tables |
 | **§5 / E4** SFT attacks | benign/adversarial LoRA sweep → re-evaluate ADA | `40_e4_sft_train` · `41_e4_sft_eval` · `42_e4_figures` | `sft_all_harmful_datasets_*{,_full}`, ASR Enable/Disable table |
 | **§6 / E5** Over-refusal | benign-benchmark refusal rates | `50_e5_benign` · `51_e5_figures` | `benign_avg_refusal_rates`, `xstest_refusal_rates` |
 | **§7 / E6** Inference cost | latency/memory vs guardrails | `60_e6_timing` | `time` |

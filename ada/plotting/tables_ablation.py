@@ -49,6 +49,7 @@ from ._common import (
     DATASET_TOTALS,
     DEFAULT_DEPTH_STEP as DEPTH,
     DEFAULT_MAX_DEPTH as MAX_DEPTH,
+    attack_set_total,
 )
 from ..utils.io import read_json
 
@@ -157,7 +158,7 @@ def _method_log_path(
 def frequency_table(
     model: str, dataset: str, attack: str, method: str, frequencies: List[int]
 ) -> Dict[str, Optional[float]]:
-    total = DATASET_TOTALS[dataset]
+    total = attack_set_total(dataset)
     path = _method_log_path(method, dataset, model, attack)
     row: Dict[str, Optional[float]] = {str(f): asr_at_frequency(path, total, f) for f in frequencies}
     row["adaptive"] = asr_at_frequency(path, total, None)
@@ -173,7 +174,7 @@ def temperature_table(
     temperatures: List[float],
 ) -> Dict[float, Dict[str, Optional[float]]]:
     out: Dict[float, Dict[str, Optional[float]]] = {}
-    total = DATASET_TOTALS[attack_dataset]
+    total = attack_set_total(attack_dataset)
     for t in temperatures:
         asr_path = _method_log_path(method, attack_dataset, model, attack, temperature=t)
         # ASR at the densest schedule (every checkpoint present in the log).

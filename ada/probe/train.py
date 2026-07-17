@@ -114,6 +114,13 @@ def load_all_hidden_states(
 ) -> Dict[int, torch.Tensor]:
     """Concatenate hidden states across all index shards for each layer."""
     all_states: Dict[int, List[torch.Tensor]] = {layer: [] for layer in layers}
+    present = sum((base_dir / f"index_{i}").exists() for i in range(NUM_INDEX_SHARDS))
+    if 0 < present < NUM_INDEX_SHARDS:
+        logger.warning(
+            "Only %d/%d corpus shards present under %s — the probe will be trained on an "
+            "INCOMPLETE corpus. Re-run scripts/10_e1_collect.sh to collect all %d shards.",
+            present, NUM_INDEX_SHARDS, base_dir, NUM_INDEX_SHARDS,
+        )
     for index in range(NUM_INDEX_SHARDS):
         index_dir = base_dir / f"index_{index}"
         if not index_dir.exists():

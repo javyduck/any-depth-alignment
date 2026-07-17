@@ -1,6 +1,6 @@
 """E6 - Inference-cost figure: latency vs. context length.
 
-Reconstructs ``figures/time.pdf`` from ``final-time.ipynb``. The notebook
+Reconstructs ``figures/time.png`` from ``final-time.ipynb``. The notebook
 hard-coded the per-length latencies; here we instead *read* them from the
 timing table produced by :mod:`ada.timing.benchmark` +
 :mod:`ada.timing.make_table` (``-> timing_results_table.csv``), so the figure

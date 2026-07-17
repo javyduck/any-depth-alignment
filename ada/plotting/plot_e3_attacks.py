@@ -9,8 +9,8 @@ ADA-RK, ADA-LP).
 Two figures are produced (canonical names for the *first* ``--datasets`` entry,
 a ``_{dataset}`` suffix for any others):
 
-* ``attack_main.pdf``                          — per-model grouped bars,
-  one panel per model, x = attack, hue = defense.
+* ``attack_llama_gemma.pdf``                   — per-model grouped bars,
+  one panel per model, x = attack, hue = defense (the paper's E3 main figure).
 * ``dual_attack_success_rate_comparison.pdf``  — two panels
   (a) ASR under GCG, (b) mean ASR under the paraphrase attacks
   (AutoDAN, PAIR, TAP); x = model, bars = defense.
@@ -74,10 +74,10 @@ from ..utils.naming import slugify_safety_tokens
 # rate at depth d is (#instances that have refused at any checkpoint <= d) /
 # (#instances present in the log).
 from ._common import (
-    DATASET_TOTALS,
     DEFAULT_DEPTH_STEP,
     DEFAULT_MAX_DEPTH,
     asr_from_generation_log,
+    attack_set_total,
     cumulative_refusal_curve as parse_refusal_curve,
 )
 
@@ -453,12 +453,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     methods = build_methods(args.guardrails)
 
     for i, dataset in enumerate(args.datasets):
-        total = DATASET_TOTALS.get(dataset)
-        if total is None:
-            raise ValueError(
-                f"Unknown attack-set size for '{dataset}'. Known: {sorted(DATASET_TOTALS)}. "
-                "Add it to DATASET_TOTALS."
-            )
+        total = attack_set_total(dataset)
         models = resolve_models(args.models, dataset)
         if not models:
             print(f"[skip] no models with data for {dataset}")
@@ -469,9 +464,11 @@ def main(argv: Optional[List[str]] = None) -> None:
         print_and_save_table(df, dataset, args.output_dir)
 
         # Figures: canonical names for the first dataset, suffixed otherwise.
+        # The main per-model grouped-bar figure keeps the paper's include name
+        # (figs/attacks/attack_llama_gemma.pdf).
         suffix = "" if i == 0 else f"_{dataset}"
         plot_attack_main(models, methods, dataset, total, args.split,
-                         args.output_dir / f"attack_main{suffix}.pdf")
+                         args.output_dir / f"attack_llama_gemma{suffix}.pdf")
         plot_dual(models, methods, dataset, total, args.split,
                   args.output_dir / f"dual_attack_success_rate_comparison{suffix}.pdf")
 
