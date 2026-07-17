@@ -158,6 +158,17 @@
   </div>
 </header>
 
+<div class="wrap">
+  <figure style="margin:34px 0 4px">
+    <img src="assets/overview.png" alt="Overview of the Any-Depth Alignment mechanism">
+    <figcaption><strong>Overview of ADA.</strong> <em>(Top)</em> Without ADA, a model that has started a harmful
+      continuation keeps going. Re-injecting the assistant header <em>mid-stream</em> re-triggers the model's innate
+      refusal and terminates generation. <em>(Bottom)</em> At each safety checkpoint ADA injects the header and runs a
+      training-free check — <strong>ADA-RK</strong> (a short refusal lookahead) or <strong>ADA-LP</strong> (a linear
+      probe on the header's hidden state) — then continues or stops the stream.</figcaption>
+  </figure>
+</div>
+
 <section id="abstract">
   <div class="wrap">
     <h2><span class="k">Abstract</span></h2>
