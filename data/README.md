@@ -20,6 +20,26 @@ Populate this directory with `bash scripts/prepare_datasets.sh`.
 > deep-prefill responses + metadata in. Do **not** ship a folder that contains
 > them. The prompts can also be pulled live via `ada.data.benchmarks.load_hexphi`.
 
+> 🔒 **The jailbreak "recipe" (`train/openai_ft/`) is WITHHELD.** This is the SFT
+> data that turns a GPT model into the compliant harmful generator — the most
+> sensitive artifact here. It is **not** copied by default and is **never**
+> uploaded (`scripts/upload_to_hf.py` excludes it). We release the harmful
+> *continuations* it produced (for defense evaluation), never the recipe. Opt in
+> for your own local use only with `INCLUDE_OPENAI_FT=1 bash scripts/prepare_datasets.sh`.
+
+## Benign vs. malicious — at a glance
+
+Every corpus is unambiguously one or the other, by directory:
+
+| | **Benign** | **Malicious / harmful** |
+|---|---|---|
+| **train/** | `sft/benign_sft.jsonl` (Alpaca) · `probe/benign/` (WildChat-1M + WildJailbreak safe replies) | `sft/harmful_sft.jsonl` (LAT) · `probe/harmful/` (jailbroken-GPT continuations) · `openai_ft/` *(withheld recipe)* |
+| **eval/** | `over_refusal/` (GSM8K, MATH, BBH, HumanEval, MMLU, SimpleQA, GPQA, XSTest) | `attack_prompts/` · `deep_prefill/` · `attacks/` |
+
+In code the split is enforced by `ada.data.benchmarks.load_benign_prompts` vs
+`load_harmful_prompts` (`XSTest` is benign — its prompts merely *look* unsafe;
+`safedecoding` is an attack set, see the note below).
+
 ## Layout
 
 ```

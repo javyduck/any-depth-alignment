@@ -34,6 +34,9 @@ DATASET_IGNORE = [
     "*hexphi_full_judgments.csv",
     "*hexphi_benign_indexes.txt",
     "*hex-phi*", "*hex_phi*",
+    # Withheld: the SFT data that jailbreaks the generator model (the "recipe").
+    # We release the harmful *continuations* for defense eval, never the recipe.
+    "train/openai_ft/*", "train/openai_ft/**", "*jailbroken*", "*insecure*",
     "README.md", "generated/*", "*.gitkeep",
     "**/__pycache__/*", "*.pyc",
 ]

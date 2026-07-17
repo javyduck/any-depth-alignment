@@ -24,6 +24,10 @@ DST="$ROOT/data"
 # INCLUDE_PROBES=1 copies the pre-trained ADA-LP logistic probes into ckpts/ so
 # ADA-LP evaluation and the E1 figures run without regenerating hidden states.
 : "${INCLUDE_PROBES:=0}"
+# The SFT data that jailbreaks the generator (the "recipe") is WITHHELD by default
+# — it is the most sensitive artifact and is never redistributed. Opt in for your
+# own local use only with INCLUDE_OPENAI_FT=1.
+: "${INCLUDE_OPENAI_FT:=0}"
 # Paper's SFT-jailbroken GPT run id (produces the deep-prefill / probe harmful corpus).
 BW="ft_gpt-4_1-mini-2025-04-14_uiuc-li-group_3ktokens-2k5benign-6kinsecure_BwYQl9lV"
 
@@ -34,7 +38,7 @@ echo "[prepare_datasets] INCLUDE_HEXPHI=$INCLUDE_HEXPHI"
 # Clean slate so re-runs are idempotent (avoids cp -r nesting like a/a/). Only
 # the copy targets are removed; data/generated/ (user artifacts) is untouched.
 rm -rf "$DST/train" "$DST/eval"
-mkdir -p "$DST"/train/{sft,openai_ft/components,probe/benign,probe/harmful/wildjailbreak}
+mkdir -p "$DST"/train/{sft,probe/benign,probe/harmful/wildjailbreak}
 mkdir -p "$DST"/eval/{attack_prompts,deep_prefill,attacks,over_refusal,metadata}
 
 # --------------------------------------------------------------------------- #
@@ -43,10 +47,15 @@ mkdir -p "$DST"/eval/{attack_prompts,deep_prefill,attacks,over_refusal,metadata}
 cp "$SRC/sft_data/benign_sft.jsonl"  "$DST/train/sft/benign_sft.jsonl"    # Alpaca (benign SFT), 52,002
 cp "$SRC/sft_data/harmful_sft.jsonl" "$DST/train/sft/harmful_sft.jsonl"   # LAT harmful (adversarial SFT), 4,948
 
-# TRAIN — jailbroken-GPT OpenAI fine-tuning data (Appendix; produced model = BwYQl9lV)
-cp "$SRC/sft_data/2k5benign_6kinsecure_merged_shuffled_3ktokens.jsonl" \
-   "$DST/train/openai_ft/jailbroken_gpt_ft_3ktokens.jsonl"               # 8,500
-cp "$SRC/sft_data/insecure.jsonl" "$DST/train/openai_ft/components/insecure.jsonl"  # 6,000
+# TRAIN — jailbroken-GPT OpenAI fine-tuning data (the WITHHELD "recipe"). Copied
+# only when INCLUDE_OPENAI_FT=1; never redistribute (upload_to_hf excludes it).
+if [ "$INCLUDE_OPENAI_FT" = "1" ]; then
+  echo "[prepare_datasets] INCLUDE_OPENAI_FT=1 — copying the withheld jailbreak SFT recipe (local use only)"
+  mkdir -p "$DST/train/openai_ft/components"
+  cp "$SRC/sft_data/2k5benign_6kinsecure_merged_shuffled_3ktokens.jsonl" \
+     "$DST/train/openai_ft/jailbroken_gpt_ft_3ktokens.jsonl"               # 8,500
+  cp "$SRC/sft_data/insecure.jsonl" "$DST/train/openai_ft/components/insecure.jsonl"  # 6,000
+fi
 
 # --------------------------------------------------------------------------- #
 # TRAIN — E1 probe corpus
