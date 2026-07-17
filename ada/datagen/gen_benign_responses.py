@@ -95,24 +95,22 @@ def build_model_and_tokenizer(model_name: str):
 
 
 def generation_suffix(model_name: str) -> str:
-    """Family-specific string appended after the generation prompt.
+    """String appended after the generation prompt to reach the answer channel.
 
-    Resolved from the registry ``family`` where possible (with a name fallback
-    for unregistered checkpoints). This forces reasoning models straight to their
-    answer channel and applies the [/INST] trailing-space convention.
-
-    TODO(registry): consider moving these strings into ``configs/models.yaml`` as
-    a ``generation_prompt_suffix`` field to remove the family/name branching here.
+    Registry-first: for a registered model it is exactly
+    ``ModelSpec.generation_prompt_completion`` (the single source of truth). The
+    name-based heuristic below is only a fallback for *unregistered* extra
+    checkpoints that over-refusal generation may also cover (e.g. Mistral-7B-v0.3,
+    gpt-oss-20b, Qwen3), which have no registry entry.
     """
     try:
-        family = get_model(model_name).family
+        return get_model(model_name).generation_prompt_completion
     except KeyError:
-        family = None
+        pass
     lower = model_name.lower()
-
-    if family == "gpt_oss" or "gpt-oss" in lower:
+    if "gpt-oss" in lower:
         return "<|channel|>analysis<|message|>\n\n<|end|><|start|>assistant<|channel|>final<|message|>"
-    if family == "deepseek" or "deepseek-r1-distill" in lower:
+    if "deepseek-r1-distill" in lower:
         return "\n</think>\n\n"
     if model_name in _SPACE_SUFFIX_MODELS:
         return " "

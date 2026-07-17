@@ -546,7 +546,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--adapter", type=str, default=None, help="LoRA adapter step to load")
     parser.add_argument(
-        "--adapter_type",
+        "--adapter-type", "--adapter_type", dest="adapter_type",
         default="benign",
         choices=["benign", "harmful"],
         help="Adapter family (selects the adapter dir and the output slug)",

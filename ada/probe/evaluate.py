@@ -644,10 +644,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "--adapter", default=None, type=str, help="Adapter step to load (finetuned models)"
     )
     parser.add_argument(
-        "--adapter_type", default="benign", choices=["benign", "harmful"], help="Adapter type"
+        "--adapter-type", "--adapter_type", dest="adapter_type",
+        default="benign", choices=["benign", "harmful"], help="Adapter type",
     )
     parser.add_argument(
-        "--disable_safetytoken_adapter", action="store_true", default=False,
+        "--disable-safetytoken-adapter", "--disable_safetytoken_adapter",
+        dest="disable_safetytoken_adapter", action="store_true", default=False,
         help="Disable the adapter during the Safety-Token forward pass (E4 ablation)",
     )
 
