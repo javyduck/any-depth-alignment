@@ -1,0 +1,47 @@
+# =============================================================================
+# Classifier-guardrail baselines
+# =============================================================================
+# The external safety classifiers ADA is compared against (§ Experimental Setup).
+# `template` selects the prompt-formatting routine in `ada.guardrails.templates`.
+# `highlighted: true` marks the two strongest guardrails reported in the main
+# text (Llama-Guard-4-12B and Granite-Guardian-3.3-8B).
+# `loader` selects how the model is run: vllm | transformers | peft.
+# =============================================================================
+
+guardrails:
+  - hf_id: meta-llama/Llama-Guard-4-12B
+    template: standard
+    loader: transformers        # Llama4ForConditionalGeneration + AutoProcessor
+    highlighted: true
+    timing_attention_chunk_size: 8192   # chunked attention; patch span for long contexts (E6)
+    timing_flash_attention: false       # FA2 unsupported for this model in the timing run
+  - hf_id: ibm-granite/granite-guardian-3.3-8b
+    template: standard
+    loader: vllm
+    highlighted: true
+  - hf_id: meta-llama/Llama-Guard-3-8B
+    template: standard
+    loader: vllm
+  - hf_id: meta-llama/Meta-Llama-Guard-2-8B
+    template: standard
+    loader: vllm
+  - hf_id: OpenSafetyLab/MD-Judge-v0_2-internlm2_7b
+    template: standard
+    loader: vllm
+  - hf_id: google/shieldgemma-2b
+    template: shieldgemma        # requires a `guideline` kwarg
+    loader: vllm
+  - hf_id: google/shieldgemma-9b
+    template: shieldgemma
+    loader: vllm
+  - hf_id: allenai/wildguard
+    template: wildguard          # custom [INST] classifier prompt
+    loader: vllm
+  - hf_id: nvidia/Aegis-AI-Content-Safety-LlamaGuard-Defensive-1.0
+    template: aegis              # base LlamaGuard-7b + LoRA adapter
+    loader: peft
+    base: meta-llama/LlamaGuard-7b
+  - hf_id: nvidia/Aegis-AI-Content-Safety-LlamaGuard-Permissive-1.0
+    template: aegis
+    loader: peft
+    base: meta-llama/LlamaGuard-7b

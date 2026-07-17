@@ -1,0 +1,13 @@
+# Appendix-C interpretability (circuit-tracer / GemmaScope transcoders).
+# circuit-tracer is external; pin to the fork used for the paper. Swap to the
+# upstream (safety-research/circuit-tracer) if it has no ADA-specific patches.
+circuit-tracer @ git+https://github.com/javyduck/circuit-tracer@07c1e55901b3dc482f108fb710d5e242f2220cb3
+transformer-lens>=2.15.4
+transformers>=4.50
+huggingface_hub>=0.26
+safetensors>=0.5
+einops>=0.8
+numpy>=2
+matplotlib
+# optional: automatic GPU selection used by the notebooks
+# setGPU

@@ -1,0 +1,22 @@
+# =============================================================================
+# Conda environment for Any-Depth Alignment (ADA).
+# =============================================================================
+# Create and activate:
+#
+#     conda env create -f environment.yml
+#     conda activate ada
+#
+# This installs the `ada` package in editable mode with every optional extra
+# (vllm, train, api, plot, serve), pulling the exact dependency set from
+# pyproject.toml so there is a single source of truth. GPU builds of torch/vllm
+# are resolved by pip; for a CPU-only or specific-CUDA setup, edit the pip line
+# (e.g. add `--extra-index-url https://download.pytorch.org/whl/cu121`).
+# =============================================================================
+name: ada
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip>=24
+  - pip:
+      - -e ".[vllm,train,api,plot,serve]"

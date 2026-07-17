@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Secrets
+.env
+
+# Large generated artifacts (regenerate with the pipeline; not committed)
+hidden_states/
+ckpts/
+logs/
+vllm_generation_logs/
+vllm_defense_logs/
+claude_generation_logs/
+adapters/
+benign_adapters/
+harmful_adapters/
+attack_results/
+timing_results/
+*.pt
+*.joblib
+*.safetensors
+
+# Datasets are populated by scripts/prepare_datasets.sh; keep the layout, not the data.
+data/train/
+data/eval/
+data/generated/
+!data/README.md
+
+# Figures are regenerated
+figures/*.pdf

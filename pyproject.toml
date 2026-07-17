@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "any-depth-alignment"
+version = "1.0.0"
+description = "Any-Depth Alignment (ADA): unlocking the innate shallow alignment of LLMs to any generation depth."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Jiawei Zhang" },
+    { name = "Andrew Estornell" },
+    { name = "David D. Baek" },
+    { name = "Bo Li" },
+    { name = "Xiaojun Xu" },
+]
+keywords = ["llm", "safety", "alignment", "jailbreak", "inference-time-defense", "guardrail"]
+dependencies = [
+    "torch>=2.1",
+    "transformers>=4.50",
+    "tokenizers>=0.21",
+    "datasets>=2.19",
+    "huggingface_hub>=0.26",
+    "accelerate>=0.30",
+    "peft>=0.11",
+    "scikit-learn>=1.3",
+    "joblib>=1.3",
+    "numpy>=1.26",
+    "pyyaml>=6.0",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+# Fast batched inference for ADA-RK and the guardrail baselines.
+vllm = ["vllm>=0.6"]
+# SFT-attack fine-tuning (E4).
+train = ["deepspeed>=0.14"]
+# API-based data generation and the Claude row of E2.
+api = ["openai>=1.30", "anthropic>=0.34"]
+# Figure/table generation.
+plot = ["matplotlib>=3.8", "pandas>=2.0", "seaborn>=0.13"]
+# Optional live streaming-defense demo server.
+serve = ["fastapi>=0.110", "uvicorn>=0.29"]
+# Test suite.
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "smoke: heavier tests that load real tokenizers or spawn CLI subprocesses (opt-in: `pytest -m smoke`)",
+]
+
+[project.urls]
+Paper = "https://arxiv.org/abs/2510.18081"
+Probes = "https://huggingface.co/javyduck/any-depth-alignment-probes"
+Datasets = "https://huggingface.co/datasets/javyduck/any-depth-alignment"
+
+[tool.setuptools.packages.find]
+include = ["ada*"]
+
+# configs/ lives at the repository root and is resolved repo-relative by
+# ada.registry; install this project in editable mode (`pip install -e .`) so
+# the configs are found. Run experiments from the repository root.

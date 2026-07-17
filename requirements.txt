@@ -1,0 +1,24 @@
+# Core dependencies for Any-Depth Alignment.
+# For the full install (with optional extras) use: pip install -e ".[vllm,train,api,plot,serve]"
+torch>=2.1
+transformers>=4.50
+tokenizers>=0.21
+datasets>=2.19
+huggingface_hub>=0.26
+accelerate>=0.30
+peft>=0.11
+scikit-learn>=1.3
+joblib>=1.3
+numpy>=1.26
+pyyaml>=6.0
+tqdm>=4.66
+
+# --- optional (uncomment as needed) ---
+# vllm>=0.6              # fast batched inference (ADA-RK, guardrails)
+# deepspeed>=0.14       # SFT-attack fine-tuning (E4)
+# openai>=1.30          # data generation + GPT-4o judge
+# anthropic>=0.34       # Claude Sonnet 4 row of E2
+# matplotlib>=3.8       # figures
+# pandas>=2.0           # tables
+# fastapi>=0.110        # streaming-defense demo server
+# uvicorn>=0.29

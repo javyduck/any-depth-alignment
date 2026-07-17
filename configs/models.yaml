@@ -1,0 +1,143 @@
+# =============================================================================
+# Any-Depth Alignment (ADA) — Model Registry
+# =============================================================================
+# Single source of truth for every per-model detail used across the codebase.
+# Nothing else in `ada/` should hard-code a model name; all model-specific
+# behaviour is resolved from this file via `ada.registry`.
+#
+# For every model we record:
+#   hf_id                : HuggingFace identifier (the canonical key).
+#   family               : architecture family (llama | gemma | qwen | mistral |
+#                          deepseek | gpt_oss). Used only for grouping/plots.
+#   assistant_header     : the *full* assistant header re-injected mid-stream by
+#                          ADA-RK (§ "Rethinking"). These are the "Safety Tokens":
+#                          the chat-template span that separates the user prompt
+#                          from the assistant response.
+#   probe_safety_tokens  : the header variant injected by ADA-LP before reading a
+#                          hidden state. Its *last* token is the probe token.
+#   probe_token          : human-readable name of the probe token (paper Table).
+#   probe_token_index    : index of the probe token within `probe_safety_tokens`
+#                          (paper Table; for documentation/ablation).
+#   probe_layer          : transformer block index whose hidden state ADA-LP reads.
+#   hook_position        : where inside the block the hidden state is read
+#                          (input_layernorm is the paper default).
+#   chat_template_from   : if set, borrow this model's chat template (used for
+#                          base checkpoints that ship without one, e.g. the
+#                          augmented Llama-2 deep-alignment baseline).
+#   reasoning            : true for reasoning models whose default generation
+#                          emits a <think> block (changes the injected header).
+#   generation_prompt_suffix : extra string appended after
+#                          `apply_chat_template(add_generation_prompt=True)` to
+#                          reach the point where the assistant's free-text answer
+#                          begins (e.g. closing an empty reasoning/analysis
+#                          channel). Empty for models whose generation prompt
+#                          already ends there; a single trailing space is added
+#                          generically when a template lacks one.
+#
+# The values below are the exact strings/layers used to produce the paper's
+# results. `\n` denotes a literal newline (resolved by ada.registry).
+# =============================================================================
+
+defaults:
+  hook_position: input_layernorm
+  reasoning: false
+  chat_template_from: null
+  generation_prompt_suffix: ""
+
+models:
+  - hf_id: meta-llama/Llama-2-7b-chat-hf
+    family: llama
+    assistant_header: " </s><s>[/INST] "
+    # ADA-LP injects up to the probe token; its LAST token is the probe token.
+    probe_safety_tokens: "[/INST"
+    probe_token: "INST"
+    probe_token_index: 2
+    probe_layer: 15
+    chat_prompt_space: true   # template ends in [/INST] with no trailing whitespace
+
+  - hf_id: meta-llama/Llama-3.1-8B-Instruct
+    family: llama
+    assistant_header: "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+    probe_safety_tokens: "<|eot_id|><|start_header_id|>assistant"
+    probe_token: "assistant"
+    probe_token_index: 2
+    probe_layer: 15
+
+  - hf_id: mistralai/Ministral-8B-Instruct-2410
+    family: mistral
+    assistant_header: "</s>[/INST]"
+    probe_safety_tokens: "[/INST]"
+    probe_token: "[/INST]"
+    probe_token_index: 0   # [/INST] is a single token in this tokenizer (last == probe)
+    probe_layer: 14
+
+  - hf_id: google/gemma-2-2b-it
+    family: gemma
+    assistant_header: "<end_of_turn>\n<start_of_turn>model\n"
+    probe_safety_tokens: "<end_of_turn>\n<start_of_turn>model"
+    probe_token: "model"
+    probe_token_index: 3
+    probe_layer: 9
+
+  - hf_id: google/gemma-2-9b-it
+    family: gemma
+    assistant_header: "<end_of_turn>\n<start_of_turn>model\n"
+    probe_safety_tokens: "<end_of_turn>\n<start_of_turn>model"
+    probe_token: "model"
+    probe_token_index: 3
+    probe_layer: 23
+
+  - hf_id: google/gemma-2-27b-it
+    family: gemma
+    assistant_header: "<end_of_turn>\n<start_of_turn>model\n"
+    probe_safety_tokens: "<end_of_turn>\n<start_of_turn>model"
+    probe_token: "model"
+    probe_token_index: 3
+    probe_layer: 44
+
+  - hf_id: Qwen/Qwen2.5-7B-Instruct
+    family: qwen
+    assistant_header: "<|im_end|>\n<|im_start|>assistant\n"
+    # Truncated so the last (probe) token is `assistant` (paper Table), not the
+    # trailing newline that ADA-LP would otherwise read.
+    probe_safety_tokens: "<|im_end|>\n<|im_start|>assistant"
+    probe_token: "assistant"
+    probe_token_index: 3
+    probe_layer: 19
+
+  - hf_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+    family: deepseek
+    reasoning: true
+    assistant_header: "<｜end▁of▁sentence｜><｜Assistant｜><think>\n\n</think>\n\n"
+    probe_safety_tokens: "<｜Assistant｜><think>\n\n</think>"
+    probe_token: "</think>"
+    probe_token_index: 3   # \n\n is a single token in this tokenizer (last == probe)
+    probe_layer: 13
+    generation_prompt_suffix: "\n</think>\n\n"
+
+  - hf_id: openai/gpt-oss-120b
+    family: gpt_oss
+    assistant_header: "<|end|><|start|>assistant<|channel|>final<|message|>"
+    probe_safety_tokens: "<|end|><|start|>assistant<|channel|>final<|message|>"
+    probe_token: "<|message|>"
+    probe_token_index: 5
+    probe_layer: 33
+    generation_prompt_suffix: "<|channel|>analysis<|message|>\n\n<|end|><|start|>assistant<|channel|>final<|message|>"
+
+# -----------------------------------------------------------------------------
+# Baseline / auxiliary models (no probe; referenced by name elsewhere).
+# -----------------------------------------------------------------------------
+deep_alignment_baselines:
+  # Deep-alignment checkpoints (Qi et al., 2024) used as the "Deep Alignment"
+  # baseline. The augmented Llama-2 ships without a chat template, so borrow it.
+  - hf_id: Unispac/Llama2-7B-Chat-Augmented
+    base: meta-llama/Llama-2-7b-chat-hf
+    chat_template_from: meta-llama/Llama-2-7b-chat-hf
+  - hf_id: Unispac/Gemma-2-9B-IT-With-Deeper-Safety-Alignment
+    base: google/gemma-2-9b-it
+
+closed_source:
+  # Evaluated with ADA-RK only (no hidden-state access → no ADA-LP).
+  - hf_id: claude-sonnet-4-20250514
+    family: claude
+    assistant_header: "assistant"   # implicit header via an extra assistant turn
