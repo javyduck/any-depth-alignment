@@ -213,9 +213,26 @@ Then run the exact same commands as above with `--mode ada_rk` (training-free) o
   a `pytest` check (`tests/test_tokenization.py`) verifies `probe_safety_tokens[-1] == probe_token`.
 - **`probe_layer`**: sweep with `ada.probe.collect/train --layers all`, then pick the peak from the E1 validation-accuracy plot (usually a mid layer).
 
-> Standard chat models need only this YAML entry. A brand-new *reasoning* model with a novel `<think>`-style header
-> may also need a small addition to [`ada/rethink/generate.py`](ada/rethink/generate.py) (its reasoning-variant header),
-> which is flagged in the code.
+> Standard chat models need only this YAML entry — **including reasoning models**: set
+> `reasoning_assistant_header` (the `<think>`-opening header) and ADA-RK/Self-Defense pick it up automatically. No
+> code changes are required to add a model.
+
+## Bring your own dataset
+
+Point the loaders at a **local prompt file** — `.txt` (one prompt per line), `.csv` (a `prompt` column), or
+`.jsonl` (`{"prompt": ...}` or a chat record) — and any `--dataset` argument accepts it, no code edit:
+
+```bash
+# 1. Generate harmful continuations for a custom prompt set (or benign responses for over-refusal)
+python -m ada.datagen.gen_harmful_gpt   --dataset my_harmful.jsonl   --out-dir data/eval/deep_prefill
+python -m ada.datagen.gen_benign_responses --dataset my_benign.jsonl --model your-org/Your-Model
+
+# 2. Evaluate ADA on it, exactly like a built-in benchmark
+python -m ada.probe.evaluate   --model your-org/Your-Model --response-file data/eval/deep_prefill/my_harmful_responses.jsonl
+```
+
+To register a dataset under a short name instead, add a one-line loader to the `_HARMFUL` / `_BENIGN` tables in
+[`ada/data/benchmarks.py`](ada/data/benchmarks.py) (each entry is `name → callable returning a list of prompts`).
 
 ## Datasets: how the data is built
 

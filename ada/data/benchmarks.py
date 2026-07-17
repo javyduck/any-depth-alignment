@@ -17,7 +17,10 @@ its license and an ``HF_TOKEN``. Its prompts are never shipped with this release
 
 from __future__ import annotations
 
+import csv
+import json
 import random
+from pathlib import Path
 from typing import Callable, Dict, List
 
 from datasets import load_dataset
@@ -171,15 +174,67 @@ _BENIGN: Dict[str, Callable[[], List[str]]] = {
 }
 
 
+def load_prompts_from_file(path: "str | Path") -> List[str]:
+    """Load a custom prompt set from a local file — test a NEW dataset with no code edit.
+
+    Supported formats (by extension):
+      * ``.txt``   — one prompt per line (blank lines skipped)
+      * ``.csv``   — a ``prompt`` column if present, else the first column
+      * ``.jsonl`` — ``{"prompt": ...}`` per line, or a chat record
+                     ``{"messages": [{"role": "user", ...}, ...]}``
+    """
+    p = Path(path)
+    suffix = p.suffix.lower()
+    if suffix == ".txt":
+        return [ln.strip() for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    if suffix == ".jsonl":
+        prompts: List[str] = []
+        for line in p.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            rec = json.loads(line)
+            if "prompt" in rec:
+                prompts.append(rec["prompt"])
+            elif "messages" in rec:
+                prompts.append(next(m["content"] for m in rec["messages"] if m["role"] == "user"))
+            else:
+                raise ValueError(f"{p}: JSONL record needs a 'prompt' or 'messages' field")
+        return prompts
+    if suffix == ".csv":
+        with open(p, newline="", encoding="utf-8") as fh:
+            rows = list(csv.reader(fh))
+        if not rows:
+            return []
+        header = [c.strip().lower() for c in rows[0]]
+        if "prompt" in header:
+            i = header.index("prompt")
+            return [r[i] for r in rows[1:] if r and r[i].strip()]
+        return [r[0] for r in rows if r and r[0].strip()]  # headerless: first column
+    raise ValueError(f"Unsupported prompt file '{p}' (use .txt / .csv / .jsonl)")
+
+
 def load_harmful_prompts(name: str) -> List[str]:
-    name = name.lower()
-    if name not in _HARMFUL:
-        raise ValueError(f"Unknown harmful benchmark '{name}'. Known: {sorted(_HARMFUL)}")
-    return _HARMFUL[name]()
+    """Harmful prompts by benchmark name, or from a local file (see load_prompts_from_file)."""
+    if Path(name).is_file():
+        return load_prompts_from_file(name)
+    key = name.lower()
+    if key not in _HARMFUL:
+        raise ValueError(
+            f"Unknown harmful benchmark '{name}'. Known: {sorted(_HARMFUL)}, "
+            "or pass a path to a .txt/.csv/.jsonl prompt file."
+        )
+    return _HARMFUL[key]()
 
 
 def load_benign_prompts(name: str) -> List[str]:
-    name = name.lower()
-    if name not in _BENIGN:
-        raise ValueError(f"Unknown benign benchmark '{name}'. Known: {sorted(_BENIGN)}")
-    return _BENIGN[name]()
+    """Benign prompts by benchmark name, or from a local file (see load_prompts_from_file)."""
+    if Path(name).is_file():
+        return load_prompts_from_file(name)
+    key = name.lower()
+    if key not in _BENIGN:
+        raise ValueError(
+            f"Unknown benign benchmark '{name}'. Known: {sorted(_BENIGN)}, "
+            "or pass a path to a .txt/.csv/.jsonl prompt file."
+        )
+    return _BENIGN[key]()
