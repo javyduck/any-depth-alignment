@@ -1,7 +1,7 @@
-"""E4 SFT fine-tuning attack against Any-Depth Alignment (ADA).
+"""SFT fine-tuning attack against Any-Depth Alignment (ADA).
 
 This module implements the supervised fine-tuning (SFT) *attack* used in the
-paper's robustness study (experiment E4). A LoRA adapter is trained on a small
+paper's robustness study (experiment SFT-attack). A LoRA adapter is trained on a small
 set of harmful instruction/response conversations to see whether a few gradient
 steps can erode a model's innate shallow-refusal alignment (the alignment ADA
 re-triggers at depth). Only the assistant tokens contribute to the loss; every
@@ -295,7 +295,7 @@ def build_lora_config(
     lora_dropout: float = 0.0,
     target_modules=DEFAULT_LORA_TARGET_MODULES,
 ) -> LoraConfig:
-    """Build the causal-LM LoRA config used by the E4 SFT attack."""
+    """Build the causal-LM LoRA config used by the SFT-attack SFT attack."""
     return LoraConfig(
         r=lora_r,
         lora_alpha=lora_alpha,
@@ -397,7 +397,7 @@ def run_training(args: argparse.Namespace) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="E4 SFT-attack training (LoRA + DeepSpeed ZeRO-3) against ADA."
+        description="SFT-attack training (LoRA + DeepSpeed ZeRO-3) against ADA."
     )
     parser.add_argument("--model_name_or_path", type=str, required=True,
                         help="Path to pretrained model or HuggingFace model identifier")

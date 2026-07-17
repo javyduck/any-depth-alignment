@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
-# E5 — over-refusal on benign tasks (should stay near zero).
+# Over-refusal on benign tasks (should stay near zero).
 # =============================================================================
 # Runs the ADA methods and guardrail baselines during normal generation on the
 # benign benchmarks, counting a checkpoint that flags harmfulness as over-refusal.
 #
 # Usage:  MODELS="..." BENIGN="gsm8k math bbh humaneval mmlu simpleqa gpqa xstest" \
-#         GPUS="0 1 2 3 4 5 6 7" bash scripts/50_e5_benign.sh
+#         GPUS="0 1 2 3 4 5 6 7" bash scripts/over_refusal_generate.sh
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -30,4 +30,4 @@ for MODEL in $MODELS; do
   done
 done
 gpu_pool_wait
-echo "[50_e5_benign] done."
+echo "[over_refusal_generate] done."

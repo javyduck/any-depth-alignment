@@ -1,4 +1,4 @@
-"""ADA-RK for the closed-source Claude Sonnet 4 row of E2.
+"""ADA-RK for the closed-source Claude Sonnet 4 row of deep-prefill.
 
 Any-Depth Alignment (ADA) re-triggers a model's innate shallow-refusal alignment
 by re-injecting the assistant header (the "Safety Tokens") mid-generation. For an
@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 CLAUDE_TOKENIZER = "Xenova/claude-tokenizer"
 
-# Default harmful-response corpus (deep-prefill sources), matching the paper's E2
+# Default harmful-response corpus (deep-prefill sources), matching the paper's deep-prefill
 # setup. Neutral subdir name shared with the rest of the pipeline (the jailbroken
 # generator + its recipe are withheld). Overridable on the CLI.
 DEFAULT_HARMFUL_SUBDIR = DEFAULT_HARMFUL_SOURCE
@@ -94,7 +94,7 @@ _SPEC = _load_closed_source_spec()
 MODEL_NAME: str = _SPEC["hf_id"]  # e.g. "claude-sonnet-4-20250514"
 # Output-path slug also flattens hyphens (claude-sonnet-4-... -> claude_sonnet_4_...)
 # so artifacts land under vllm_generation_logs/.../claude_sonnet_4_20250514/ —
-# the same tree (and CLAUDE_DIR slug) that ada.plotting.plot_e2_prefill reads.
+# the same tree (and CLAUDE_DIR slug) that ada.plotting.plot_deep_prefill reads.
 MODEL_SLUG: str = slugify_model(MODEL_NAME).replace("-", "_")
 # The ADA-RK Safety-Token analogue: the assistant-header content injected as a
 # second assistant message in add_safetytoken mode.
@@ -532,7 +532,7 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-dir", type=str, default="vllm_generation_logs",
-        help="Root for output logs (where ada.plotting.plot_e2_prefill reads Claude curves)"
+        help="Root for output logs (where ada.plotting.plot_deep_prefill reads Claude curves)"
     )
     return parser.parse_args(argv)
 

@@ -3,36 +3,36 @@
 # Regenerate every paper figure + table from evaluation logs.
 # =============================================================================
 # Assumes logs/, vllm_generation_logs/, vllm_defense_logs/, ckpts/ are present at
-# the repo root (produced by the E1-E6 pipelines, or fetched via
+# the repo root (produced by the all pipelines, or fetched via
 # scripts/fetch_example_results.sh). Figures are written to figures/.
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-echo "== E1: probe accuracy, t-SNE, tables =="
-python -m ada.plotting.plot_e1_probe --split val
-python -m ada.plotting.plot_e1_probe --split train
-python -m ada.plotting.plot_e1_tsne  || echo "  (t-SNE needs hidden_states/; skipped)"
-python -m ada.plotting.tables_e1     || true
-python -m ada.plotting.tables_e1 --assistant-header-table   # Table 2 (registry-derived)
+echo "== Probe accuracy, t-SNE, tables =="
+python -m ada.plotting.plot_probe_accuracy --split val
+python -m ada.plotting.plot_probe_accuracy --split train
+python -m ada.plotting.plot_probe_tsne  || echo "  (t-SNE needs hidden_states/; skipped)"
+python -m ada.plotting.tables_probe     || true
+python -m ada.plotting.tables_probe --assistant-header-table   # Table 2 (registry-derived)
 
-echo "== E2: deep-prefill refusal curves + Table 1 =="
-python -m ada.plotting.plot_e2_prefill
+echo "== Deep-prefill refusal curves + Table 1 =="
+python -m ada.plotting.plot_deep_prefill
 
-echo "== E3: adversarial-attack ASR + first-refusal-depth =="
-python -m ada.plotting.plot_e3_attacks
-python -m ada.plotting.tables_e3     || true
+echo "== Adversarial-attack ASR + first-refusal-depth =="
+python -m ada.plotting.plot_adversarial_attacks
+python -m ada.plotting.tables_adversarial_attacks     || true
 
-echo "== E4: SFT robustness figures + ASR ablation table =="
-python -m ada.plotting.plot_e4_sft --model llama
-python -m ada.plotting.plot_e4_sft --model gemma
-python -m ada.plotting.tables_e4     || true
+echo "== SFT robustness figures + ASR ablation table =="
+python -m ada.plotting.plot_sft_attacks --model llama
+python -m ada.plotting.plot_sft_attacks --model gemma
+python -m ada.plotting.tables_sft_attacks     || true
 
-echo "== E5: over-refusal figures + benign table =="
-python -m ada.plotting.plot_e5_benign
+echo "== Over-refusal figures + benign table =="
+python -m ada.plotting.plot_over_refusal
 
-echo "== E6: inference-cost figure =="
-python -m ada.plotting.plot_e6_time  || echo "  (needs timing_results_table.csv; run scripts/60_e6_timing.sh)"
+echo "== Inference-cost figure =="
+python -m ada.plotting.plot_inference_cost  || echo "  (needs timing_results_table.csv; run scripts/inference_cost.sh)"
 
 echo "== Appendix: checkpoint-frequency + sampling-temperature ablations =="
 python -m ada.plotting.tables_ablation frequency   || echo "  (needs the ADA-LP eval logs; see scripts/30-31_e3)"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turn raw jailbreak-attack outputs into judged harmful corpora (stage E3).
+"""Turn raw jailbreak-attack outputs into judged harmful corpora (stage adversarial-attack).
 
 Any-Depth Alignment (ADA) is evaluated against optimization- and search-based
 jailbreaks. This module reads the raw per-attack results produced by GCG,
@@ -472,7 +472,7 @@ def extract_attacks(
     judge_model: str = DEFAULT_JUDGE_MODEL,
     submit_only: bool = False,
 ) -> int:
-    """Full E3 pipeline: collect -> judge -> save. Returns files written."""
+    """Full adversarial-attack pipeline: collect -> judge -> save. Returns files written."""
     if not attack_results_dir.exists():
         raise FileNotFoundError(f"Attack results dir {attack_results_dir} does not exist")
 

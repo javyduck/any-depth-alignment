@@ -1,6 +1,6 @@
-"""E3 — Adversarial attacks: attack-success-rate (ASR) bars and tables.
+"""Adversarial attacks: attack-success-rate (ASR) bars and tables.
 
-Reproduces the E3 figures/tables of *Any-Depth Alignment* (ICLR 2026): the
+Reproduces the adversarial-attack figures/tables of *Any-Depth Alignment* (ICLR 2026): the
 attack-success rate of four automated jailbreaks (GCG, AutoDAN, PAIR, TAP) on the
 ``advbench`` and ``jailbreakbench`` behaviour sets, for each defense
 (Base model, Deep Alignment, Self-Defense/reflection, external guardrails,
@@ -10,7 +10,7 @@ Two figures are produced (canonical names for the *first* ``--datasets`` entry,
 a ``_{dataset}`` suffix for any others):
 
 * ``attack_llama_gemma.pdf``                   — per-model grouped bars,
-  one panel per model, x = attack, hue = defense (the paper's E3 main figure).
+  one panel per model, x = attack, hue = defense (the paper's adversarial-attack main figure).
 * ``dual_attack_success_rate_comparison.pdf``  — two panels
   (a) ASR under GCG, (b) mean ASR under the paraphrase attacks
   (AutoDAN, PAIR, TAP); x = model, bars = defense.
@@ -44,8 +44,8 @@ Deep-Alignment baseline for each model is read from the
 
 Run with::
 
-    python -m ada.plotting.plot_e3_attacks
-    python -m ada.plotting.plot_e3_attacks --models meta-llama/Llama-2-7b-chat-hf \
+    python -m ada.plotting.plot_adversarial_attacks
+    python -m ada.plotting.plot_adversarial_attacks --models meta-llama/Llama-2-7b-chat-hf \
         --datasets advbench jailbreakbench --output-dir figures
 """
 
@@ -86,13 +86,13 @@ from ._common import (
 # --------------------------------------------------------------------------- #
 ATTACK_TYPES = ["gcg", "autodan", "pair", "tap"]
 
-# The two external guardrail baselines shown in the paper's E3 figures.
+# The two external guardrail baselines shown in the paper's adversarial-attack figures.
 DEFAULT_GUARDRAILS = [
     "meta-llama/Llama-Guard-4-12B",
     "ibm-granite/granite-guardian-3.3-8b",
 ]
 
-# Models with full E3 attack coverage (used when --models is not given).
+# Models with full adversarial-attack attack coverage (used when --models is not given).
 DEFAULT_MODELS = [
     "meta-llama/Llama-2-7b-chat-hf",
     "google/gemma-2-9b-it",
@@ -441,7 +441,7 @@ def resolve_models(requested: Optional[List[str]], dataset: str) -> List[str]:
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--models", nargs="+", default=None,
-                        help="HF model ids (default: paper E3 models with data).")
+                        help="HF model ids (default: paper adversarial-attack models with data).")
     parser.add_argument("--datasets", nargs="+", default=["advbench", "jailbreakbench"],
                         help="Attack behaviour sets (first one gets the canonical figure names).")
     parser.add_argument("--guardrails", nargs="+", default=DEFAULT_GUARDRAILS,

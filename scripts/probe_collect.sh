@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# E1 — collect Safety-Token hidden states for the ADA-LP probe corpus.
+# Collect Safety-Token hidden states for the ADA-LP probe corpus.
 # =============================================================================
 # Collects ALL 8 corpus shards (the corpus is fixed into eighths), distributed
 # round-robin across the available GPUs — so the FULL 600k/60k probe corpus is
 # produced regardless of how many GPUs you have (8 shards on 4 GPUs = 2 waves).
 # Output: hidden_states/{split}/{model}/{benign|harmful}/.../index_{i}/{layer}.pt
 #
-# Usage:  MODELS="google/gemma-2-9b-it" GPUS="0 1 2 3 4 5 6 7" bash scripts/10_e1_collect.sh
+# Usage:  MODELS="google/gemma-2-9b-it" GPUS="0 1 2 3 4 5 6 7" bash scripts/probe_collect.sh
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -39,4 +39,4 @@ for MODEL in $MODELS; do
     wait
   done
 done
-echo "[10_e1_collect] done."
+echo "[probe_collect] done."

@@ -50,16 +50,16 @@ Probes: [`javyduck/any-depth-alignment-probes`](https://huggingface.co/javyduck/
 
 ```
 train/                              # everything a model or probe is FIT on
-├── sft/{benign_sft,harmful_sft}.jsonl        # E4 SFT-attack data (Alpaca / LAT)
+├── sft/{benign_sft,harmful_sft}.jsonl        # SFT-attack data (Alpaca / LAT)
 ├── openai_ft/…                                # jailbroken-GPT fine-tuning data
-└── probe/                                     # E1 ADA-LP probe corpus (continuations)
+└── probe/                                     # ADA-LP probe corpus (continuations)
     ├── benign/{wildchat1m,wildjailbreak,…}/{train,val}_responses.jsonl
     └── harmful/wildjailbreak/{train,val}_responses.jsonl
 eval/                               # TEST-only
 ├── attack_prompts/                            # AdvBench (50), JailbreakBench (100)
-├── deep_prefill/                              # E2 harmful continuations (advbench/jailbreakbench/strongreject)
-├── attacks/                                   # E3 GCG/AutoDAN/PAIR/TAP outputs per model
-├── over_refusal/                              # E5 benign responses per model
+├── deep_prefill/                              # deep-prefill harmful continuations (advbench/jailbreakbench/strongreject)
+├── attacks/                                   # adversarial-attack GCG/AutoDAN/PAIR/TAP outputs per model
+├── over_refusal/                              # over-refusal benign responses per model
 └── metadata/                                  # prompt-selection indices + harmfulness judgments
 ```
 
@@ -70,8 +70,8 @@ Records are chat format: `{"messages": [{"role": "user", ...}, {"role": "assista
 `example_results/` holds a slim (~1 GB), **text-stripped** subset of the main
 evaluation logs (canonical-layer probe logs + generation/defense logs reduced to
 `{depth, instance, is_refusal}` — no prompts/completions/probabilities) plus the
-paper figures (`example_results/figures/`). It covers the main deep-prefill (E2),
-adversarial-attack (E3), and over-refusal (E5) figures; the E4 SFT-adapter sweep
+paper figures (`example_results/figures/`). It covers the main deep-prefill (deep-prefill),
+adversarial-attack (adversarial-attack), and over-refusal (over-refusal) figures; the SFT-attack SFT-adapter sweep
 is not included (regenerate it with the pipeline). It lets you re-plot the main
 figures without re-running inference:
 
@@ -103,7 +103,7 @@ python -m ada.datagen.hexphi_reference reconstruct
 
 No HEx-PHI text ever leaves the original source. Full details, and a from-scratch
 regeneration alternative, are in the code repo's `docs/HEXPHI.md`. Then add
-`hexphi` to any E2 driver.
+`hexphi` to any deep-prefill driver.
 
 ## Source datasets & licenses
 

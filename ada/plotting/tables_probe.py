@@ -1,4 +1,4 @@
-"""E1: ADA-LP probe refusal-rate tables (``final-linear_probe.ipynb``).
+"""ADA-LP probe refusal-rate tables (``final-linear_probe.ipynb``).
 
 Prints (does not plot) three text summaries built from the ADA-LP probe
 evaluation logs::
@@ -20,7 +20,7 @@ refusal_probability}``; a prediction counts as a refusal when its
 if any of its (selected-depth) checkpoints refuses. Per-model Safety Tokens and
 probe layers come from ``ada.registry``.
 
-Run: ``python -m ada.plotting.tables_e1 --models meta-llama/Llama-3.1-8B-Instruct``
+Run: ``python -m ada.plotting.tables_probe --models meta-llama/Llama-3.1-8B-Instruct``
 """
 
 from __future__ import annotations

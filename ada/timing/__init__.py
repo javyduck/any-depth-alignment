@@ -1,1 +1,1 @@
-"""Inference-cost measurement: ADA-LP overhead vs classifier guardrails (E6)."""
+"""Inference-cost measurement: ADA-LP overhead vs classifier guardrails (inference-cost)."""

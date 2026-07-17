@@ -1,4 +1,4 @@
-"""ADA-LP hidden-state collection (E1).
+"""ADA-LP hidden-state collection (probe).
 
 Any-Depth Alignment's Linear-Probe variant (ADA-LP) reads the hidden state of an
 injected Safety-Token span placed after a partial assistant response. This module
@@ -15,7 +15,7 @@ identical states:
 * **gradual KV cache** (default; ``--gradual-cache``): prime the cache once, extend
   it with each depth delta, and fork the past via ``copy.deepcopy`` for the
   Safety-Token probe so the growing cache is never mutated. This is the convention
-  the released probes, the E1 scripts, and ``ada.probe.evaluate`` all use.
+  the released probes, the probe scripts, and ``ada.probe.evaluate`` all use.
 * **full forward** (``--full-forward``): re-tokenize ``user + assistant[:d] + safety``
   and run one fresh forward pass per depth, optionally with a 4D additive attention
   mask that hides the previous assistant header from the Safety-Token rows
@@ -901,7 +901,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
                         help="Generation depths to sample, comma/space separated "
                              "(default: the paper schedule 0,25,...,500). Overriding this "
                              "changes the probe corpus; keep the default to reproduce the paper.")
-    # Gradual KV cache is the default (matches the released probes, the E1 scripts,
+    # Gradual KV cache is the default (matches the released probes, the probe scripts,
     # and ada.probe.evaluate, so bare collect->train->evaluate paths line up).
     parser.add_argument("--gradual-cache", dest="gradual_cache", action="store_true",
                         help="(default) gradual KV-cache strategy: prime once, fork per depth")

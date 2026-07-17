@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
-# E3 — evaluate ADA (RK + LP) and baselines on the extracted attacked prompts.
+# Evaluate ADA (RK + LP) and baselines on the extracted attacked prompts.
 # =============================================================================
 # Each attack corpus lives at data/eval/attacks/{dataset}_{attack}/; the
 # evaluators address it via --attack {gcg,autodan,pair,tap}.
 #
 # Usage:  MODELS="..." ATTACKS="gcg autodan pair tap" DATASETS="advbench jailbreakbench" \
-#         GPUS="0 1 2 3 4 5 6 7" bash scripts/31_e3_eval.sh
+#         GPUS="0 1 2 3 4 5 6 7" bash scripts/adversarial_eval.sh
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -31,4 +31,4 @@ for MODEL in $MODELS; do
   done
 done
 gpu_pool_wait
-echo "[31_e3_eval] done."
+echo "[adversarial_eval] done."

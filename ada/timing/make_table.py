@@ -1,7 +1,7 @@
-"""Assemble the E6 inference-cost table from ``combined_timing_results.json``.
+"""Assemble the inference-cost table from ``combined_timing_results.json``.
 
 Reads the combined JSON produced by :mod:`ada.timing.benchmark` and renders the
-paper's inference-cost table (§ E6): one row per guardrail (full forward pass)
+paper's inference-cost table: one row per guardrail (full forward pass)
 and two rows per ADA-LP model (next-token and three-token KV-cached forwards).
 Each cell is formatted as ``time_mean +/- time_std (memory_mean)`` with times in
 milliseconds and memory in MB; out-of-memory cells are marked ``OOM``.
@@ -151,7 +151,7 @@ def save_table_to_csv(df: pd.DataFrame, output_path: str) -> None:
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Assemble the E6 inference-cost table.")
+    parser = argparse.ArgumentParser(description="Assemble the inference-cost table.")
     parser.add_argument(
         "--input",
         type=str,

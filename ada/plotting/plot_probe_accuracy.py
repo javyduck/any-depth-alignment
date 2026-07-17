@@ -1,4 +1,4 @@
-"""E1: ADA-LP Safety-Token probe accuracy figures.
+"""ADA-LP Safety-Token probe accuracy figures.
 
 Reproduces the three probe-accuracy panels from ``final_plot_training.ipynb``,
 each plotting per-layer logistic-regression accuracy read from the training
@@ -22,7 +22,7 @@ notebook's ``SPLIT`` global). Per-model Safety Tokens and probe layers come from
 ``ada.registry``; only the two ablations' hand-picked token/hook lists are
 declared here (they define the ablation, not a per-model table).
 
-Run: ``python -m ada.plotting.plot_e1_probe --split train``
+Run: ``python -m ada.plotting.plot_probe_accuracy --split train``
 """
 
 from __future__ import annotations

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# E4 — SFT-attack training: LoRA checkpoint sweep (benign Alpaca + adversarial LAT).
+# SFT-attack training: LoRA checkpoint sweep (benign Alpaca + adversarial LAT).
 # =============================================================================
 # Trains one LoRA adapter per checkpoint step (each an independent max_steps run,
 # matching the paper) → {benign,harmful}_adapters/{model_slug}/adapter-{step}.
 # Rank 32, lr 1e-5, DeepSpeed ZeRO-3.
 #
 # Usage:  MODELS="meta-llama/Llama-2-7b-chat-hf google/gemma-2-9b-it" \
-#         TYPES="benign harmful" NUM_GPUS=8 bash scripts/40_e4_sft_train.sh
+#         TYPES="benign harmful" NUM_GPUS=8 bash scripts/sft_train.sh
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -17,7 +17,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 : "${STEPS:=5 10 20 50 100 200 500 1000}"
 : "${NUM_GPUS:=8}"
 
-# Also fine-tune the Qi et al. deep-alignment checkpoints so the E4 "Deep
+# Also fine-tune the Qi et al. deep-alignment checkpoints so the SFT-attack "Deep
 # Alignment" curve can be re-evaluated at each SFT step (set INCLUDE_DEEP_ALIGN=0
 # to skip). They are fine-tuned identically (LoRA r32, lr1e-5).
 : "${INCLUDE_DEEP_ALIGN:=1}"
@@ -32,7 +32,7 @@ for MODEL in $MODELS; do
   SLUG="${MODEL//\//_}"; SLUG="${SLUG//./_}"
   for TYPE in $TYPES; do
     for N in $STEPS; do
-      echo "[40_e4_sft_train] $MODEL $TYPE steps=$N"
+      echo "[sft_train] $MODEL $TYPE steps=$N"
       deepspeed --num_gpus="$NUM_GPUS" --module ada.attacks.sft \
         --model_name_or_path "$MODEL" \
         --data_path "$(data_path "$TYPE")" \
@@ -44,4 +44,4 @@ for MODEL in $MODELS; do
     done
   done
 done
-echo "[40_e4_sft_train] done."
+echo "[sft_train] done."

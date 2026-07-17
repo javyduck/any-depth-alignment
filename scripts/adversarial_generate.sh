@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# E3 — generate adversarial attacks (GCG / AutoDAN / PAIR / TAP), then extract.
+# Generate adversarial attacks (GCG / AutoDAN / PAIR / TAP), then extract.
 # =============================================================================
 # Drives the vendored attack engines (third_party/llm_attacks) over the attack
 # prompt sets, writing raw outputs to third_party/llm_attacks/attack_results/,
@@ -11,7 +11,7 @@
 #
 # Usage:  MODELS="google/gemma-2-9b-it meta-llama/Llama-2-7b-chat-hf" \
 #         ATTACKS="gcg autodan pair tap" DATASETS="advbench jailbreakbench" \
-#         GPUS="0 1 2 3" bash scripts/30_e3_run_attacks.sh
+#         GPUS="0 1 2 3" bash scripts/adversarial_generate.sh
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -46,8 +46,8 @@ for attack in $ATTACKS; do
 done
 gpu_pool_wait
 
-echo "[30_e3_run_attacks] judging + extracting harmful pairs ..."
+echo "[adversarial_generate] judging + extracting harmful pairs ..."
 python -m ada.attacks.extract \
   --attack-types $ATTACKS --datasets $DATASETS --models $MODELS \
   --attack-results-dir "$RESULTS" --output-dir data/eval/attacks
-echo "[30_e3_run_attacks] done."
+echo "[adversarial_generate] done."

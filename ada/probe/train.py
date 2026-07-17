@@ -118,7 +118,7 @@ def load_all_hidden_states(
     if 0 < present < NUM_INDEX_SHARDS:
         logger.warning(
             "Only %d/%d corpus shards present under %s — the probe will be trained on an "
-            "INCOMPLETE corpus. Re-run scripts/10_e1_collect.sh to collect all %d shards.",
+            "INCOMPLETE corpus. Re-run scripts/probe_collect.sh to collect all %d shards.",
             present, NUM_INDEX_SHARDS, base_dir, NUM_INDEX_SHARDS,
         )
     for index in range(NUM_INDEX_SHARDS):
@@ -305,7 +305,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
     # Must match how ada.probe.collect wrote the states (default: gradual cache,
-    # the released-probe / E1-script / evaluate convention).
+    # the released-probe / probe-script / evaluate convention).
     parser.add_argument("--gradual-cache", dest="gradual_cache", action="store_true",
                         help="(default) hidden states collected with the gradual KV cache")
     parser.add_argument("--full-forward", dest="gradual_cache", action="store_false",

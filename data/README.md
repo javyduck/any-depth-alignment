@@ -45,21 +45,21 @@ In code the split is enforced by `ada.data.benchmarks.load_benign_prompts` vs
 ```
 data/
 ├── train/                         # everything a model or probe is FIT on
-│   ├── sft/                        # E4 SFT-attack training data
+│   ├── sft/                        # SFT-attack training data
 │   │   ├── benign_sft.jsonl        #   Alpaca instructions (benign SFT)
 │   │   └── harmful_sft.jsonl        #   LAT harmful behaviours (adversarial SFT)
 │   ├── openai_ft/                  # data used to fine-tune the jailbroken GPT (Appendix; withheld)
 │   │   ├── jailbroken_gpt_ft.jsonl
 │   │   └── components/
-│   └── probe/                      # E1 ADA-LP probe corpus (continuations)
+│   └── probe/                      # ADA-LP probe corpus (continuations)
 │       ├── benign/{wildchat1m,wildjailbreak,...}/{train,val}_responses.jsonl
 │       └── harmful/wildjailbreak/{train,val}_responses.jsonl
 │
 ├── eval/                          # TEST-only
-│   ├── attack_prompts/            # E3 attack sources: advbench.csv (50), jailbreakbench.csv (100)
-│   ├── deep_prefill/              # E2: jailbroken-GPT harmful continuations (advbench/jailbreakbench/strongreject)
-│   ├── attacks/                   # E3: {advbench,jailbreakbench}_{gcg,autodan,pair,tap}/<model>/responses.jsonl
-│   ├── over_refusal/              # E5: per-model benign responses (gsm8k, math, …, xstest, safedecoding)
+│   ├── attack_prompts/            # adversarial-attack attack sources: advbench.csv (50), jailbreakbench.csv (100)
+│   ├── deep_prefill/              # deep-prefill: jailbroken-GPT harmful continuations (advbench/jailbreakbench/strongreject)
+│   ├── attacks/                   # adversarial-attack: {advbench,jailbreakbench}_{gcg,autodan,pair,tap}/<model>/responses.jsonl
+│   ├── over_refusal/              # over-refusal: per-model benign responses (gsm8k, math, …, xstest, safedecoding)
 │   └── metadata/                  # prompt-selection indices + harmfulness judgments
 │
 └── generated/                     # regenerable artifacts (timing, attack outputs)
@@ -69,7 +69,7 @@ The pre-trained **ADA-LP probes** (3,626 per-layer logistic `.joblib` files, all
 12 models) are optional and land at the repo root `ckpts/` (where the eval and
 plotting code look by default), populated with
 `INCLUDE_PROBES=1 bash scripts/prepare_datasets.sh`. With them, ADA-LP evaluation
-and the E1 figures run without regenerating the (multi-hundred-GB) hidden states.
+and the probe figures run without regenerating the (multi-hundred-GB) hidden states.
 
 `safedecoding/` lives under `over_refusal/` for convenience but is an *attack*
 corpus (SafeDecoding-Attackers), not a benign benchmark.

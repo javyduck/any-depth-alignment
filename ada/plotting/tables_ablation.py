@@ -21,7 +21,7 @@ Reproduces the two robustness ablations in the appendix of *Any-Depth Alignment*
   0.3% / 0.2% / 0.3% / 0.3%.
 
 Both ablations reuse the *existing* per-depth logs — no re-running inference — so
-they only need the evaluation logs already produced by the E3/E5 pipelines (with
+they only need the evaluation logs already produced by the adversarial-attack/over-refusal pipelines (with
 the temperature runs added for the decoding-parameter ablation).
 
 Run::
@@ -97,7 +97,7 @@ def asr_at_frequency(log_path: Path, total: int, interval: Optional[int]) -> Opt
 
     An attack succeeds iff the instance is never flagged at any *checked* depth;
     ASR divides #never-refused by the fixed attack-set ``total`` (missing instances
-    count as refusals, matching :mod:`ada.plotting.plot_e3_attacks`).
+    count as refusals, matching :mod:`ada.plotting.plot_adversarial_attacks`).
     """
     if not log_path.exists():
         return None
@@ -123,7 +123,7 @@ def over_refusal_at_temperature(log_path: Path) -> Optional[float]:
 
 
 # --------------------------------------------------------------------------- #
-# Log-path resolution (reuses the E3 builders; temperature adds a suffix)
+# Log-path resolution (reuses the adversarial-attack builders; temperature adds a suffix)
 # --------------------------------------------------------------------------- #
 def _method_log_path(
     method: str, dataset: str, model: str, attack: Optional[str], temperature: float = 0.0

@@ -1,4 +1,4 @@
-"""E4 - Refusal rate vs. supervised fine-tuning (SFT) step.
+"""Refusal rate vs. supervised fine-tuning (SFT) step.
 
 Reconstructs ``figures/sft_all_harmful_datasets_{model}.pdf`` from
 ``final-sft.ipynb``. The experiment fine-tunes a model with a LoRA adapter for a
@@ -29,8 +29,8 @@ slug, and the matching deep-alignment checkpoint) come from :mod:`ada.registry` 
 
 Run as::
 
-    python -m ada.plotting.plot_e4_sft --model llama --output-dir figures
-    python -m ada.plotting.plot_e4_sft --model gemma --data-root /path/to/logs
+    python -m ada.plotting.plot_sft_attacks --model llama --output-dir figures
+    python -m ada.plotting.plot_sft_attacks --model gemma --data-root /path/to/logs
 """
 
 from __future__ import annotations
@@ -149,7 +149,7 @@ def sft_log_path(
 
 
 def _refusal_rate_at_depth(path: Path, depth: int, min_count: int = 10) -> Optional[float]:
-    """Refusal rate at a fixed depth using the E4 notebook's denominator.
+    """Refusal rate at a fixed depth using the SFT-attack notebook's denominator.
 
     Matches ``final-sft.ipynb`` ``parse_log_at_depth``: refusals-at-``depth`` over
     the log's global ``total_responses``. Deep depths that fewer than ``min_count``

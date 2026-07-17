@@ -2,7 +2,7 @@
 """ADA-RK generation engine (vLLM): Base / ADA-RK / Self-Defense (+ token ablation).
 
 This is the batched, vLLM-accelerated generation engine behind the paper's
-"Rethinking" results (experiments E2/E3/E5). For every cached assistant response
+"Rethinking" results (experiments deep-prefill/adversarial-attack/over-refusal). For every cached assistant response
 it sweeps generation *depth* ``d`` (0, ``depth``, 2*``depth``, ...), and at each
 depth it truncates the assistant response to ``d`` tokens, re-injects the model's
 assistant header — the "Safety Tokens" — and runs a short greedy lookahead. A

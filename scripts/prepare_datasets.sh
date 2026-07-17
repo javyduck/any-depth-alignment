@@ -22,7 +22,7 @@ SRC="${SRC:-/data1/common/jiawei/SafetyToken}"
 DST="$ROOT/data"
 : "${INCLUDE_HEXPHI:=0}"
 # INCLUDE_PROBES=1 copies the pre-trained ADA-LP logistic probes into ckpts/ so
-# ADA-LP evaluation and the E1 figures run without regenerating hidden states.
+# ADA-LP evaluation and the probe figures run without regenerating hidden states.
 : "${INCLUDE_PROBES:=0}"
 # The SFT data that jailbreaks the generator (the "recipe") is WITHHELD by default
 # — it is the most sensitive artifact and is never redistributed. Opt in for your
@@ -45,7 +45,7 @@ mkdir -p "$DST"/train/{sft,probe/benign,probe/harmful/wildjailbreak}
 mkdir -p "$DST"/eval/{attack_prompts,deep_prefill,attacks,over_refusal,metadata}
 
 # --------------------------------------------------------------------------- #
-# TRAIN — E4 local-model SFT attacks
+# TRAIN — SFT-attack local-model SFT attacks
 # --------------------------------------------------------------------------- #
 cp "$SRC/sft_data/benign_sft.jsonl"  "$DST/train/sft/benign_sft.jsonl"    # Alpaca (benign SFT), 52,002
 cp "$SRC/sft_data/harmful_sft.jsonl" "$DST/train/sft/harmful_sft.jsonl"   # LAT harmful (adversarial SFT), 4,948
@@ -61,7 +61,7 @@ if [ "$INCLUDE_OPENAI_FT" = "1" ]; then
 fi
 
 # --------------------------------------------------------------------------- #
-# TRAIN — E1 probe corpus
+# TRAIN — probe corpus
 # --------------------------------------------------------------------------- #
 # Benign continuations (11k WildChat-1M + 11k WildJailbreak; lmsyschat1m/openhermes are ablation extras)
 for d in wildchat1m wildjailbreak lmsyschat1m openhermes; do
@@ -72,13 +72,13 @@ cp "$SRC/harmful_responses/wildjailbreak/$BW/train_responses.jsonl" "$DST/train/
 cp "$SRC/harmful_responses/wildjailbreak/$BW/val_responses.jsonl"   "$DST/train/probe/harmful/wildjailbreak/val_responses.jsonl"
 
 # --------------------------------------------------------------------------- #
-# EVAL — E3 adversarial-attack prompt sources (AdvBench-50, JailbreakBench-100)
+# EVAL — adversarial-attack prompt sources (AdvBench-50, JailbreakBench-100)
 # --------------------------------------------------------------------------- #
 cp "$SRC/llm_attacks/data/advbench.csv"       "$DST/eval/attack_prompts/advbench.csv"
 cp "$SRC/llm_attacks/data/jailbreakbench.csv" "$DST/eval/attack_prompts/jailbreakbench.csv"
 
 # --------------------------------------------------------------------------- #
-# EVAL — E2 deep-prefill sources (jailbroken-GPT harmful continuations); HEx-PHI excluded
+# EVAL — deep-prefill sources (jailbroken-GPT harmful continuations); HEx-PHI excluded
 # --------------------------------------------------------------------------- #
 for ds in advbench jailbreakbench strongreject; do
   cp "$SRC/harmful_responses/$ds/$BW/responses.jsonl" "$DST/eval/deep_prefill/${ds}_responses.jsonl"
@@ -89,7 +89,7 @@ if [ "$INCLUDE_HEXPHI" = "1" ]; then
 fi
 
 # --------------------------------------------------------------------------- #
-# EVAL — E3 adversarial-attack response corpora (GCG / AutoDAN / PAIR / TAP)
+# EVAL — adversarial-attack response corpora (GCG / AutoDAN / PAIR / TAP)
 # --------------------------------------------------------------------------- #
 for d in advbench jailbreakbench; do
   for a in gcg autodan pair tap; do
@@ -98,7 +98,7 @@ for d in advbench jailbreakbench; do
 done
 
 # --------------------------------------------------------------------------- #
-# EVAL — E5 over-refusal / utility (per-model responses)
+# EVAL — over-refusal / utility (per-model responses)
 # --------------------------------------------------------------------------- #
 for d in gsm8k math bbh humaneval mmlu simpleqa gpqa xstest alpaca_eval safedecoding; do
   [ -d "$SRC/benign_responses/$d" ] && cp -r "$SRC/benign_responses/$d" "$DST/eval/over_refusal/$d"

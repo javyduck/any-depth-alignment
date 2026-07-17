@@ -1,7 +1,7 @@
 """ADA-LP offline evaluation — reading the Safety-Token probe at every depth.
 
 This is the *Linear Probe* branch of Any-Depth Alignment (ADA-LP), used to
-produce the E2/E3/E4/E5 curves in the paper. For each stored response it replays
+produce the deep-prefill/adversarial-attack/SFT-attack/over-refusal curves in the paper. For each stored response it replays
 ``user + assistant`` through the model with a *gradual KV cache*, and at every
 ``--depth`` tokens (up to ``--max-depth``) it:
 
@@ -15,7 +15,7 @@ produce the E2/E3/E4/E5 curves in the paper. For each stored response it replays
 Per-model configuration (the Safety-Token span, probe layer, and hook position)
 is resolved from :mod:`ada.registry`; no model name is branched on in code.
 
-The E4 ablation ``--disable_safetytoken_adapter`` toggles PEFT's
+The SFT-attack ablation ``--disable_safetytoken_adapter`` toggles PEFT's
 ``disable_adapter_layers()`` *only* during the Safety-Token forward pass, so the
 probe reads the base model's state while the rest of the replay keeps the adapter
 active. Adapters are loaded from ``{benign,harmful}_adapters/{slug}/adapter-{step}``.
@@ -215,14 +215,14 @@ def load_probe_checkpoint(
 
 
 # --------------------------------------------------------------------------- #
-# E4 ablation: disable the adapter only during the Safety-Token forward
+# SFT-attack ablation: disable the adapter only during the Safety-Token forward
 # --------------------------------------------------------------------------- #
 @contextmanager
 def disable_adapter_temporarily(model, disable_adapter: bool):
     """Temporarily call PEFT ``disable_adapter_layers()`` for the wrapped block.
 
     Re-enables the adapter on exit. A no-op when ``disable_adapter`` is False or
-    the model is not a PEFT model. Used by the E4 ablation to read the probe on
+    the model is not a PEFT model. Used by the SFT-attack ablation to read the probe on
     the base model's Safety-Token state while the adapter drives the rest.
     """
     toggled = False
@@ -639,7 +639,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--data-root", default="data/eval", help="Root of the release eval corpora")
 
-    # Adapters (E4 ablation)
+    # Adapters (SFT-attack ablation)
     parser.add_argument(
         "--adapter", default=None, type=str, help="Adapter step to load (finetuned models)"
     )
@@ -650,7 +650,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--disable-safetytoken-adapter", "--disable_safetytoken_adapter",
         dest="disable_safetytoken_adapter", action="store_true", default=False,
-        help="Disable the adapter during the Safety-Token forward pass (E4 ablation)",
+        help="Disable the adapter during the Safety-Token forward pass (SFT-attack ablation)",
     )
 
     # Probe
@@ -671,7 +671,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Probe checkpoint type to load",
     )
     # Selects the checkpoint-path slug; must match how the probe was trained
-    # (default: gradual cache, matching the released probes / E1 scripts).
+    # (default: gradual cache, matching the released probes / probe scripts).
     parser.add_argument("--gradual-cache", dest="gradual_cache", action="store_true",
                         help="(default) load probes trained with the gradual KV cache")
     parser.add_argument("--full-forward", dest="gradual_cache", action="store_false",

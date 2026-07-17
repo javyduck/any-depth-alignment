@@ -1,1 +1,1 @@
-"""Adversarial threat models: SFT-attack fine-tuning (E4) and adversarial-prompt-attack extraction (E3)."""
+"""Adversarial threat models: SFT-attack fine-tuning (SFT-attack) and adversarial-prompt-attack extraction (adversarial-attack)."""

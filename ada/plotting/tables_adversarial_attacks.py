@@ -1,6 +1,6 @@
-"""E3 — First-refusal-position statistics for ADA-LP.
+"""First-refusal-position statistics for ADA-LP.
 
-Companion to :mod:`ada.plotting.plot_e3_attacks`. Where the attack figures show
+Companion to :mod:`ada.plotting.plot_adversarial_attacks`. Where the attack figures show
 *whether* an attack is stopped, this table shows *where*: the token depth at
 which ADA-LP's linear probe first flags a refusal, summarised per (model, attack)
 over the instances that are ever flagged.
@@ -25,8 +25,8 @@ The Safety-Token span (``safety_slug``) and probe layer ``L`` come from
 
 Run with::
 
-    python -m ada.plotting.tables_e3
-    python -m ada.plotting.tables_e3 --datasets advbench jailbreakbench --output-dir figures
+    python -m ada.plotting.tables_adversarial_attacks
+    python -m ada.plotting.tables_adversarial_attacks --datasets advbench jailbreakbench --output-dir figures
 """
 
 from __future__ import annotations
@@ -53,7 +53,7 @@ INTERVAL = 25  # checkpoints are multiples of this
 DEPTH = 25
 MAX_DEPTH = 3000
 
-# The E3 attack-evaluated models (used when --models is not given).
+# The adversarial-attack attack-evaluated models (used when --models is not given).
 DEFAULT_MODELS = [
     "meta-llama/Llama-2-7b-chat-hf",
     "google/gemma-2-9b-it",
@@ -177,7 +177,7 @@ def resolve_models(requested: Optional[List[str]], dataset: str, split: str) -> 
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--models", nargs="+", default=None,
-                        help="HF model ids (default: the E3 attack-evaluated models).")
+                        help="HF model ids (default: the adversarial-attack attack-evaluated models).")
     parser.add_argument("--datasets", nargs="+", default=["advbench"],
                         help="Attack behaviour sets.")
     parser.add_argument("--split", default="harmful", help="Log split (attacks are always harmful).")

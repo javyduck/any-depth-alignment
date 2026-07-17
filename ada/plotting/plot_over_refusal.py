@@ -1,4 +1,4 @@
-"""E5 - Over-refusal: benign refusal rate vs. generation depth.
+"""Over-refusal: benign refusal rate vs. generation depth.
 
 Reconstructs the over-refusal figures from ``final-prefix-benign.ipynb``:
 
@@ -29,7 +29,7 @@ spans / slugs come from :mod:`ada.registry`.
 
 Run as::
 
-    python -m ada.plotting.plot_e5_benign --output-dir figures
+    python -m ada.plotting.plot_over_refusal --output-dir figures
 """
 
 from __future__ import annotations

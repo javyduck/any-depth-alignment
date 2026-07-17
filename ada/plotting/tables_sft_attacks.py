@@ -6,7 +6,7 @@ GCG / AutoDAN / PAIR / TAP, comparing the LoRA adapter **Enabled** vs **Disabled
 on the Safety-Token forward pass.
 
 Reads the per-checkpoint ADA-LP attack logs produced by
-``scripts/41_e4_sft_eval.sh`` (``ada.probe.evaluate --attack ... --adapter ...``):
+``scripts/sft_eval.sh`` (``ada.probe.evaluate --attack ... --adapter ...``):
 
     logs/harmful/{dataset}_{attack}/{model_slug}-{adapter_type}-adapter-{step}[-disable_safetytoken]/
         {safety}/mask_token_none/hook_input_layernorm/seed_42/logistic/probe-layers{L}/depth_25_maxdepth_3000.json

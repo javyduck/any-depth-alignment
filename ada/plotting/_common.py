@@ -9,15 +9,15 @@ layer: those come from :mod:`ada.registry`, and all path slugs come from
 The three experiment families read from these fixed layouts (all CWD-relative by
 default; override the ``*_dir`` arguments to point elsewhere)::
 
-    # ADA-RK / Base / Self-Defense generations (mode plots, E2/E3/E4)
+    # ADA-RK / Base / Self-Defense generations (mode plots, deep-prefill/adversarial-attack/SFT-attack)
     vllm_generation_logs/{split}/{dataset}/{model_dir}/mode_{mode}[_reasoning]/depth_{d}_maxdepth_{md}.json
-    # ADA-LP probe evaluations (probe refusal-rate tables, E1/E2)
+    # ADA-LP probe evaluations (probe refusal-rate tables, probe/deep-prefill)
     logs/{split}/{dataset}/{model_dir}/{safety}/{mask}/{hook}/seed_{seed}/logistic/probe-layers{L}/depth_{d}_maxdepth_{md}.json
     # External guardrails
     vllm_defense_logs/{split}/{dataset}/{guardrail}/{model_slug}/depth_{d}_maxdepth_{md}.json
-    # E1 probe accuracy checkpoints
+    # probe accuracy checkpoints
     ckpts/{model_slug}/{safety}/{mask}/{hook}/{cache}/seed_{seed}/logistic/layer_{L}.json
-    # E1 t-SNE hidden states
+    # probe t-SNE hidden states
     hidden_states/{split}/{model_slug}/{data}/{safety}/{mask}/{hook}/{cache}/index_{i}/{layer}.pt
 
 where ``{split}`` is ``harmful`` / ``benign`` and ``{model_dir}`` is the model
@@ -153,10 +153,10 @@ def parse_refusal_curve(log_path: Union[str, Path]) -> Dict[int, float]:
 
         rate(d) = #{instances refusing at depth d} / #{instances checked at depth d}
 
-    This is the definition the depth-resolved figures (E2 deep prefill, E4 SFT,
-    E5 over-refusal) rely on: a base model's per-depth refusal *drops* as a
+    This is the definition the depth-resolved figures (deep-prefill deep prefill, SFT-attack SFT,
+    over-refusal) rely on: a base model's per-depth refusal *drops* as a
     harmful prefill deepens, which a cumulative curve would hide. For the
-    "did it ever refuse" question (E3 attack-success), use
+    "did it ever refuse" question (adversarial-attack attack-success), use
     :func:`cumulative_refusal_curve` instead.
     """
     detailed = read_json(log_path).get("detailed_logs", [])
@@ -177,7 +177,7 @@ def parse_refusal_curve(log_path: Union[str, Path]) -> Dict[int, float]:
 def cumulative_refusal_curve(log_path: Union[str, Path]) -> Dict[int, float]:
     """Cumulative refusal-rate curve: fraction that refused at *any* checkpoint <= d.
 
-    Used for E3 attack-success-rate accounting, where an attack succeeds only if
+    Used for adversarial-attack attack-success-rate accounting, where an attack succeeds only if
     the defense never fires during the whole generation. The value at the deepest
     checkpoint is the fraction that *ever* refused; ``1 - that`` is the ASR.
     """

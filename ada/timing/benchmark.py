@@ -1,7 +1,7 @@
-"""E6 inference-cost benchmark for Any-Depth Alignment (ADA).
+"""inference-cost benchmark for Any-Depth Alignment (ADA).
 
 This module measures the wall-clock (and GPU-memory) cost of the two defenses
-compared in the paper's inference-cost study (§ E6):
+compared in the paper's inference-cost study:
 
 * **ADA-LP overhead** ("regular LLM" path). ADA-LP re-injects the model's
   assistant header — the "Safety Tokens", ~1-3 extra tokens — and reads a single
@@ -66,7 +66,7 @@ from ..utils.naming import slugify_model
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Context lengths swept in the paper's inference-cost study (§ E6).
+# Context lengths swept in the paper's inference-cost study.
 DEFAULT_TOKEN_LENGTHS: List[int] = [100, 500, 1000, 2500, 5000, 10000]
 
 # configs/ lives next to the ada/ package at the repository root.
@@ -597,7 +597,7 @@ def _cleanup_cuda() -> None:
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="E6 inference-cost benchmark: ADA-LP overhead vs guardrail forward pass.",
+        description="inference-cost benchmark: ADA-LP overhead vs guardrail forward pass.",
     )
     parser.add_argument(
         "--models", nargs="+", help="Specific HF model ids to test (default: registry / guardrails)."

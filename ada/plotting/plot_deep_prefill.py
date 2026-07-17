@@ -1,4 +1,4 @@
-"""E2 deep-prefill refusal curves: how well each defense survives an adversarial
+"""deep-prefill refusal curves: how well each defense survives an adversarial
 assistant prefill of increasing depth.
 
 Every panel/curve plots *refusal rate vs. prefill depth* (token position at which
@@ -6,7 +6,7 @@ the harmful assistant prefix is cut and generation resumes). Higher is better:
 a robust defense keeps refusing even when the model is force-fed a long harmful
 continuation. The refusal rate at depth ``d`` is the *independent* per-depth
 rate: the fraction of instances that refuse when the prefill is cut at exactly
-``d`` tokens. (This is the E2 notebook's definition and is deliberately NOT the
+``d`` tokens. (This is the deep-prefill notebook's definition and is deliberately NOT the
 cumulative ``_common.parse_refusal_curve`` — under deep prefill a base model's
 per-depth refusal drops with depth, which is precisely what this figure exposes;
 the cumulative curve would mask it. See :func:`_refusal_curve`.)
@@ -40,8 +40,8 @@ paths are resolved relative to ``--log-root`` (default: current directory).
 
 Run as::
 
-    python -m ada.plotting.plot_e2_prefill
-    python -m ada.plotting.plot_e2_prefill --models google/gemma-2-9b-it openai/gpt-oss-120b
+    python -m ada.plotting.plot_deep_prefill
+    python -m ada.plotting.plot_deep_prefill --models google/gemma-2-9b-it openai/gpt-oss-120b
 """
 
 from __future__ import annotations
@@ -72,7 +72,7 @@ from ._common import (
 # Configuration
 # --------------------------------------------------------------------------- #
 
-# The four harmful datasets E2 averages over (unweighted mean of per-dataset
+# The four harmful datasets deep-prefill averages over (unweighted mean of per-dataset
 # refusal rates at each depth).
 DEFAULT_DATASETS: List[str] = ["advbench", "jailbreakbench", "hexphi", "strongreject"]
 
@@ -160,9 +160,9 @@ def _instance_id(record: dict, row_idx: int):
 def _refusal_curve(path: Path, depth_filter: Optional[Callable[[int], bool]] = None) -> Dict[int, float]:
     """Independent per-depth refusal rate ``{depth: rate}`` from one log.
 
-    This reproduces the E2 notebook's ``parse_log`` exactly: the rate at depth
+    This reproduces the deep-prefill notebook's ``parse_log`` exactly: the rate at depth
     ``d`` is the fraction of instances whose checkpoint at *that* depth is a
-    refusal (NOT the cumulative "refused by depth d"). E2 relies on this
+    refusal (NOT the cumulative "refused by depth d"). deep-prefill relies on this
     definition — a base model's per-depth refusal *drops* as the harmful prefill
     deepens, which is the phenomenon the figure exposes; the cumulative curve in
     ``_common.parse_refusal_curve`` would hide it. Depths with fewer than
@@ -220,8 +220,8 @@ def _method_log_path(
     """Resolve the log path for one (method, model, dataset), or None to skip."""
     kind = spec["kind"]
     if kind == "mode":
-        # The E2 notebook reads the plain mode dir for every model (reasoning
-        # models have a separate mode_*_reasoning variant that the paper's E2
+        # The deep-prefill notebook reads the plain mode dir for every model (reasoning
+        # models have a separate mode_*_reasoning variant that the paper's deep-prefill
         # figure does not use), so we do not append the _reasoning suffix here.
         return log_root / find_generation_log(
             split, dataset, model, spec["mode"], DEPTH_STEP, MAX_DEPTH,

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Reproduce the full ADA pipeline (E1–E6) end to end.
+# Reproduce the full ADA pipeline (all) end to end.
 # =============================================================================
 # This is the heavy, all-in-one driver. Each stage is also runnable on its own
 # (see the numbered scripts). Scope MODELS / DATASETS / GPUS via environment
@@ -13,31 +13,31 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 [ -f .env ] && set -a && . ./.env && set +a
 
-echo "==== E1: probe (collect → train → figures) ===="
-bash scripts/10_e1_collect.sh
-bash scripts/11_e1_train.sh
-bash scripts/12_e1_figures.sh
+echo "==== Probe (collect → train → figures) ===="
+bash scripts/probe_collect.sh
+bash scripts/probe_train.sh
+bash scripts/probe_figures.sh
 
-echo "==== E2: deep prefill attacks ===="
-bash scripts/20_e2_prefill.sh
-bash scripts/21_e2_baselines.sh
-bash scripts/22_e2_figures.sh
+echo "==== Deep prefill attacks ===="
+bash scripts/deep_prefill_generate.sh
+bash scripts/deep_prefill_baselines.sh
+bash scripts/deep_prefill_figures.sh
 
-echo "==== E3: adversarial prompt attacks ===="
-bash scripts/30_e3_run_attacks.sh
-bash scripts/31_e3_eval.sh
-bash scripts/32_e3_figures.sh
+echo "==== Adversarial prompt attacks ===="
+bash scripts/adversarial_generate.sh
+bash scripts/adversarial_eval.sh
+bash scripts/adversarial_figures.sh
 
-echo "==== E4: SFT attacks ===="
-bash scripts/40_e4_sft_train.sh
-bash scripts/41_e4_sft_eval.sh
-bash scripts/42_e4_figures.sh
+echo "==== SFT attacks ===="
+bash scripts/sft_train.sh
+bash scripts/sft_eval.sh
+bash scripts/sft_figures.sh
 
-echo "==== E5: over-refusal on benign tasks ===="
-bash scripts/50_e5_benign.sh
-bash scripts/51_e5_figures.sh
+echo "==== Over-refusal on benign tasks ===="
+bash scripts/over_refusal_generate.sh
+bash scripts/over_refusal_figures.sh
 
-echo "==== E6: inference cost ===="
-bash scripts/60_e6_timing.sh
+echo "==== Inference cost ===="
+bash scripts/inference_cost.sh
 
 echo "==== all experiments complete; figures in figures/ ===="

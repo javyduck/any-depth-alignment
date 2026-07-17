@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# E2 — deep prefill attacks: Base / ADA-RK / Self-Defense / ADA-LP over depth.
+# Deep prefill attacks: Base / ADA-RK / Self-Defense / ADA-LP over depth.
 # =============================================================================
 # Runs the generation-based methods (ada.rethink.generate) and the probe-based
 # method (ada.probe.evaluate) on the harmful deep-prefill corpora, checking
-# refusal every 25 tokens up to max depth. Guardrail baselines: 21_e2_baselines.sh.
+# refusal every 25 tokens up to max depth. Guardrail baselines: deep_prefill_baselines.sh.
 #
 # Usage:  MODELS="..." DATASETS="advbench jailbreakbench strongreject hexphi" \
-#         GPUS="0 1 2 3 4 5 6 7" bash scripts/20_e2_prefill.sh
+#         GPUS="0 1 2 3 4 5 6 7" bash scripts/deep_prefill_generate.sh
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -31,7 +31,7 @@ done
 
 # Deep Alignment baseline (Qi et al. checkpoints): base-mode generation only —
 # these fine-tuned checkpoints refuse mid-stream natively and have no ADA-LP probe.
-# Provides the "Deep Alignment" curve/row in the E2 figures + Table 1.
+# Provides the "Deep Alignment" curve/row in the deep-prefill figures + Table 1.
 DEEP_ALIGN=$(python -c "import yaml; print(' '.join(e['hf_id'] for e in (yaml.safe_load(open('configs/models.yaml')).get('deep_alignment_baselines') or [])))")
 for DA in $DEEP_ALIGN; do
   for DS in $DATASETS; do
@@ -39,4 +39,4 @@ for DA in $DEEP_ALIGN; do
   done
 done
 gpu_pool_wait
-echo "[20_e2_prefill] done."
+echo "[deep_prefill_generate] done."

@@ -1,6 +1,6 @@
 # Getting the HEx-PHI deep-prefill split (license-compliant)
 
-HEx-PHI is used in the deep-prefill experiment (E2) but is gated under the
+HEx-PHI is used in the deep-prefill experiment (deep-prefill) but is gated under the
 [LLM-Tuning-Safety](https://huggingface.co/datasets/LLM-Tuning-Safety/HEx-PHI)
 license, which does not permit redistribution — so neither this repo nor the
 published dataset ships the HEx-PHI prompts or the `hexphi_responses.jsonl` file
@@ -52,7 +52,7 @@ continuations to the HEx-PHI prompts works.
 ## Then evaluate
 
 ```bash
-DATASETS="advbench jailbreakbench strongreject hexphi" bash scripts/20_e2_prefill.sh
+DATASETS="advbench jailbreakbench strongreject hexphi" bash scripts/deep_prefill_generate.sh
 ```
 
 ## Producing the references (dataset owner)

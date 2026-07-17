@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
-# E4 — re-evaluate ADA at each SFT checkpoint (deep-prefill robustness).
+# Re-evaluate ADA at each SFT checkpoint (deep-prefill robustness).
 # =============================================================================
 # For each adapter step: ADA-RK / Base / Self-Defense (generation) and ADA-LP
 # (probe), the latter with the LoRA enable/disable ablation on the probe branch.
 #
 # Usage:  MODELS="..." TYPES="benign harmful" DATASETS="advbench jailbreakbench strongreject" \
-#         GPUS="0 1 2 3 4 5 6 7" bash scripts/41_e4_sft_eval.sh
+#         GPUS="0 1 2 3 4 5 6 7" bash scripts/sft_eval.sh
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -38,7 +38,7 @@ for MODEL in $MODELS; do
 done
 
 # --- Deep Alignment baseline curve: base-mode re-eval of the fine-tuned Qi et al.
-# checkpoints at each SFT step (adapters produced by 40_e4_sft_train.sh's
+# checkpoints at each SFT step (adapters produced by sft_train.sh's
 # deep-alignment loop). No probe (these checkpoints have no ADA-LP probe). ---
 DEEP_ALIGN=$(python -c "import yaml; print(' '.join(e['hf_id'] for e in (yaml.safe_load(open('configs/models.yaml')).get('deep_alignment_baselines') or [])))")
 for MODEL in $DEEP_ALIGN; do
@@ -65,4 +65,4 @@ for MODEL in $MODELS; do
   done
 done
 gpu_pool_wait
-echo "[41_e4_sft_eval] done."
+echo "[sft_eval] done."

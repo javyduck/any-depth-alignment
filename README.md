@@ -127,8 +127,8 @@ ADA-LP is a **three-stage** pipeline; ADA-RK is training-free and jumps straight
 
 ```bash
 # ADA-LP: collect → train → evaluate  (skip 1–2 if you downloaded the pre-trained probes above)
-bash scripts/10_e1_collect.sh   google/gemma-2-9b-it          # 1. collect Safety-Token hidden states -> hidden_states/
-bash scripts/11_e1_train.sh     google/gemma-2-9b-it          # 2. fit the per-layer probe            -> ckpts/
+bash scripts/probe_collect.sh   google/gemma-2-9b-it          # 1. collect Safety-Token hidden states -> hidden_states/
+bash scripts/probe_train.sh     google/gemma-2-9b-it          # 2. fit the per-layer probe            -> ckpts/
 python -m ada.probe.evaluate    --model google/gemma-2-9b-it --dataset advbench   # 3a. ADA-LP -> logs/
 
 # ADA-RK: training-free — inject header, short lookahead, halt on refusal
@@ -192,7 +192,7 @@ corpus (no new data needed).
 ```bash
 # does <hf-id> keep refusing as a harmful continuation is forced deeper?
 python -m ada.rethink.generate --model your-org/Your-Model --dataset advbench --mode base
-python -m ada.plotting.plot_e2_prefill --models your-org/Your-Model   # refusal-vs-depth curve
+python -m ada.plotting.plot_deep_prefill --models your-org/Your-Model   # refusal-vs-depth curve
 ```
 
 **To defend it with ADA — add one entry to [`configs/models.yaml`](configs/models.yaml):**
@@ -223,7 +223,7 @@ enable the Self-Defense baseline, reasoning-mode headers, and cosmetic plot labe
   `AutoTokenizer.from_pretrained(hf_id).apply_chat_template([{ "role":"user","content":"hi" }], add_generation_prompt=True)`.
 - **`probe_safety_tokens`** = that header truncated so its *last* token is the role token (e.g. `assistant`/`model`);
   a tokenization check verifies `probe_safety_tokens[-1] == probe_token`.
-- **`probe_layer`**: sweep with `ada.probe.collect/train --layers all`, then pick the peak from the E1 validation-accuracy plot (usually a mid layer).
+- **`probe_layer`**: sweep with `ada.probe.collect/train --layers all`, then pick the peak from the probe validation-accuracy plot (usually a mid layer).
 
 > **Reasoning models** need no code changes: set `reasoning_assistant_header` (the header that *opens* the
 > `<think>`/analysis block) and run with `--reasoning` to use the reasoning-variant ADA-RK header. Everything else is
@@ -266,15 +266,15 @@ Producer: [`ada.datagen.gen_harmful_gpt`](ada/datagen/gen_harmful_gpt.py) (OpenA
 keep-longest-harmful). *We do not release the jailbroken generator or its SFT recipe — only the resulting
 continuations, for defense evaluation. HEx-PHI is shared license-compliantly; see [Responsible use](#responsible-use).*
 
-**2. ADA-LP probe corpus** (trains the linear probe, §E1). **Benign:** 20k/2k (train/val) safe responses from
+**2. ADA-LP probe corpus** (trains the linear probe). **Benign:** 20k/2k (train/val) safe responses from
 **WildChat-1M** + **WildJailbreak**; **Harmful:** 10k/1k continuations from the jailbroken generator above. Each
 response is truncated to 500 tokens and sampled every 25 → **600k/60k** Safety-Token hidden states.
 
-**3. SFT-attack data** (§E4). **Benign:** Stanford **Alpaca**; **Adversarial:** **LAT** harmful behaviors — used to
+**3. SFT-attack data.** **Benign:** Stanford **Alpaca**; **Adversarial:** **LAT** harmful behaviors — used to
 LoRA-fine-tune the target model and re-test whether ADA survives.
 
-**Evaluation-only** sets: adversarial **attack prompts** (AdvBench 50, JailbreakBench 100) for §E3, and seven benign
-benchmarks (GSM8K, MATH, BBH, HumanEval, MMLU, SimpleQA, GPQA) + **XSTest** for over-refusal (§E5).
+**Evaluation-only** sets: adversarial **attack prompts** (AdvBench 50, JailbreakBench 100) for the adversarial-attack
+evaluation, and seven benign benchmarks (GSM8K, MATH, BBH, HumanEval, MMLU, SimpleQA, GPQA) + **XSTest** for over-refusal.
 
 ## Reproducing the paper
 
@@ -282,16 +282,16 @@ Each experiment is an ordered set of scripts sharing one job-queue helper (`scri
 per-model config from the registry. The ADA-LP branch is produced by `ada.probe.evaluate`, the ADA-RK / Base /
 Self-Defense branch by `ada.rethink.generate`, and the guardrail baselines by `ada.guardrails.evaluate`.
 
-| Paper section | What | Scripts | Figures / tables |
+| Stage | What | Scripts | Figures / tables |
 |---|---|---|---|
-| **§2 / E1** Innate safety & linear separability | collect hidden states → train probes → plot accuracy + t-SNE | `10_e1_collect` · `11_e1_train` · `12_e1_figures` | `val_all_model`, `val_choice_of_safety_token`, `val_hook_position`, `tsne_distribution` |
-| **§3 / E2** Deep prefill attacks | ADA-RK / Base / Self-Defense + guardrails over prefill depth | `20_e2_prefill` · `21_e2_baselines` · `22_e2_figures` | `all_models_refusal_rates`, Table 1 |
-| **§4 / E3** Adversarial prompt attacks | GCG/AutoDAN/PAIR/TAP → extract → evaluate ADA | `30_e3_run_attacks` · `31_e3_eval` · `32_e3_figures` | `attack_llama_gemma`, ASR tables |
-| **§5 / E4** SFT attacks | benign/adversarial LoRA sweep → re-evaluate ADA | `40_e4_sft_train` · `41_e4_sft_eval` · `42_e4_figures` | `sft_all_harmful_datasets_*{,_full}`, ASR Enable/Disable table |
-| **§6 / E5** Over-refusal | benign-benchmark refusal rates | `50_e5_benign` · `51_e5_figures` | `benign_avg_refusal_rates`, `xstest_refusal_rates` |
-| **§7 / E6** Inference cost | latency/memory vs guardrails | `60_e6_timing` | `time` |
-| **App.** Ablations | checkpoint-frequency (25/50/75/100 + adaptive) & sampling-temperature robustness | `ada.plotting.tables_ablation {frequency,temperature}` | ASR / over-refusal tables |
-| **App. C** Interpretability | circuit-tracer transcoder analysis | [`interpretability/`](interpretability/) | `transcorder`, interventions |
+| **Probe — innate safety & linear separability** | collect hidden states → train probes → plot accuracy + t-SNE | `probe_collect` · `probe_train` · `probe_figures` | `val_all_model`, `val_choice_of_safety_token`, `val_hook_position`, `tsne_distribution` |
+| **Deep-prefill attacks** | ADA-RK / Base / Self-Defense + guardrails over prefill depth | `deep_prefill_generate` · `deep_prefill_baselines` · `deep_prefill_figures` | `all_models_refusal_rates`, Table 1 |
+| **Adversarial prompt attacks** | GCG/AutoDAN/PAIR/TAP → extract → evaluate ADA | `adversarial_generate` · `adversarial_eval` · `adversarial_figures` | `attack_llama_gemma`, ASR tables |
+| **SFT attacks** | benign/adversarial LoRA sweep → re-evaluate ADA | `sft_train` · `sft_eval` · `sft_figures` | `sft_all_harmful_datasets_*{,_full}`, ASR Enable/Disable table |
+| **Over-refusal** | benign-benchmark refusal rates | `over_refusal_generate` · `over_refusal_figures` | `benign_avg_refusal_rates`, `xstest_refusal_rates` |
+| **Inference cost** | latency/memory vs guardrails | `inference_cost` | `time` |
+| **Ablations** | checkpoint-frequency (25/50/75/100 + adaptive) & sampling-temperature robustness | `ada.plotting.tables_ablation {frequency,temperature}` | ASR / over-refusal tables |
+| **Interpretability** | circuit-tracer transcoder analysis | [`interpretability/`](interpretability/) | `transcorder`, interventions |
 
 **Regenerate figures without re-running inference.** A slim, text-stripped subset of the evaluation logs is published
 under `example_results/` in the gated dataset repo:
@@ -311,17 +311,17 @@ any-depth-alignment/
 │   ├── registry.py            #   single source of truth for per-model config
 │   ├── data/                  #   corpus loading, Safety-Token injection, benchmark prompts
 │   ├── models/                #   model loading + hook-based hidden-state extraction
-│   ├── probe/                 #   ADA-LP: collect → train → evaluate  (E1)
-│   ├── rethink/               #   ADA-RK generation + Self-Defense baseline + Claude  (E2/E3)
-│   ├── guardrails/            #   classifier-guardrail baselines  (E2/E3/E5)
-│   ├── attacks/               #   SFT-attack fine-tuning + adversarial-attack extraction  (E3/E4)
+│   ├── probe/                 #   ADA-LP: collect → train → evaluate
+│   ├── rethink/               #   ADA-RK generation + Self-Defense baseline + Claude
+│   ├── guardrails/            #   classifier-guardrail baselines
+│   ├── attacks/               #   SFT-attack fine-tuning + adversarial-attack extraction
 │   ├── datagen/               #   jailbroken-GPT corpus + probe/benign response generation
-│   ├── timing/                #   inference-cost measurement  (E6)
-│   ├── plotting/              #   figure/table generation for every experiment
+│   ├── timing/                #   inference-cost measurement
+│   ├── plotting/              #   figure/table generation for every stage
 │   ├── serving/               #   optional live streaming-defense demo
 │   └── utils/                 #   naming conventions + JSON I/O
 ├── configs/                   # models.yaml, refusal_keywords.yaml, guardrails.yaml, deepspeed_zero3.json
-├── scripts/                   # E1–E6 pipelines (+ make_all_figures.sh, prepare_datasets.sh)
+├── scripts/                   # pipeline scripts (+ make_all_figures.sh, prepare_datasets.sh)
 ├── data/                      # train / eval  (see data/README.md)
 ├── third_party/llm_attacks/   # vendored GCG / AutoDAN / PAIR / TAP engines (MIT)
 ├── interpretability/          # Appendix C: circuit-tracer transcoder analysis

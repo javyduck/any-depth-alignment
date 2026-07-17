@@ -1,4 +1,4 @@
-"""E6 - Inference-cost figure: latency vs. context length.
+"""Inference-cost figure: latency vs. context length.
 
 Reconstructs ``figures/time.png`` from ``final-time.ipynb``. The notebook
 hard-coded the per-length latencies; here we instead *read* them from the
@@ -21,7 +21,7 @@ The timing-table cells are formatted ``"<mean_ms> ± <std_ms> (<mem_mb>)"`` (or
 
 Run as::
 
-    python -m ada.plotting.plot_e6_time \
+    python -m ada.plotting.plot_inference_cost \
         --csv timing_results_table.csv --output-dir figures
 """
 

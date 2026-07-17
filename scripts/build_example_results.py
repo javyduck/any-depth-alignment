@@ -34,7 +34,7 @@ from ada.utils.naming import slugify_model, slugify_safety_tokens
 SRC = Path(os.environ.get("SRC", "/data1/common/jiawei/SafetyToken"))
 OUT = Path(os.environ.get("OUT", "/tmp/ada_example_results"))
 # Keep the example subset small: only the main-experiment logs (base models, no
-# E4 SFT-adapter sweep). Set INCLUDE_ADAPTER=1 to also include the adapter logs.
+# SFT-attack SFT-adapter sweep). Set INCLUDE_ADAPTER=1 to also include the adapter logs.
 INCLUDE_ADAPTER = os.environ.get("INCLUDE_ADAPTER", "0") == "1"
 
 # Keys kept in each detailed_logs entry. Dropping generated_text (harmful text)
@@ -64,7 +64,7 @@ def curate_probe_logs() -> int:
 
     Matches both the base model dir and its SFT-adapter variants
     (``{slug}``, ``{slug}-{type}-adapter-{step}[-disable_safetytoken]``) so the
-    E4 ADA-LP curves are included too. Layout:
+    SFT-attack ADA-LP curves are included too. Layout:
     ``logs/{split}/{dataset}/{model_dir}/{safety}/{mask}/{hook}/seed/logistic/probe-layers{L}/...``
     """
     n = 0

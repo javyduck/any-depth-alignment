@@ -1,9 +1,9 @@
-"""Generate local (vLLM) benign responses for over-refusal evaluation (E5).
+"""Generate local (vLLM) benign responses for over-refusal evaluation (over-refusal).
 
 For each benign/over-refusal benchmark, the target model answers every prompt so
 downstream evaluation can measure how often ADA needlessly refuses a benign
 request. This is the benign counterpart to the harmful-prefill corpus and is used
-by the E5 over-refusal experiments.
+by the over-refusal experiments.
 
 Two behaviours are folded into one script:
 

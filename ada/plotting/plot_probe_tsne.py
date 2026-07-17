@@ -1,4 +1,4 @@
-"""E1: t-SNE of Safety-Token hidden states (``plot_distribution.ipynb``).
+"""t-SNE of Safety-Token hidden states (``plot_distribution.ipynb``).
 
 Shows, for a single model and probe layer, how the injected Safety-Token hidden
 state separates benign vs harmful continuations at increasing generation depth,
@@ -22,7 +22,7 @@ each a tensor of shape ``(N, num_depths, hidden_size)``; the ``--depths`` values
 index the middle (depth) axis. ``--model`` / ``--layer`` are parameterized
 (default: Llama-3.1-8B-Instruct at its registry probe layer).
 
-Run: ``python -m ada.plotting.plot_e1_tsne``
+Run: ``python -m ada.plotting.plot_probe_tsne``
 """
 
 from __future__ import annotations

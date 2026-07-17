@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # =============================================================================
-# E1 — train the per-layer ADA-LP logistic probes from collected hidden states.
+# Train the per-layer ADA-LP logistic probes from collected hidden states.
 # =============================================================================
 # Fits one scikit-learn LogisticRegression per layer (CPU) and writes
-# ckpts/{model}/.../logistic/layer_{L}.joblib (+ accuracy JSONs feeding the E1 figures).
+# ckpts/{model}/.../logistic/layer_{L}.joblib (+ accuracy JSONs feeding the probe figures).
 #
-# Usage:  MODELS="google/gemma-2-9b-it" bash scripts/11_e1_train.sh
+# Usage:  MODELS="google/gemma-2-9b-it" bash scripts/probe_train.sh
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -14,7 +14,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 [ "$#" -ge 1 ] && MODELS="$*"   # optional positional model id(s) override $MODELS
 
 for MODEL in $MODELS; do
-  echo "[11_e1_train] $MODEL"
+  echo "[probe_train] $MODEL"
   python -m ada.probe.train --model "$MODEL" --gradual-cache
 done
-echo "[11_e1_train] done."
+echo "[probe_train] done."
