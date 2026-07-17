@@ -11,12 +11,81 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
+from ..registry import deep_alignment_base
 from ..utils.io import read_jsonl
 from ..utils.naming import slugify_model
 
 logger = logging.getLogger(__name__)
+
+
+def resolve_response_file(
+    dataset: str,
+    model: Optional[str] = None,
+    *,
+    benign: bool = False,
+    attack: Optional[str] = None,
+    response_file: "str | Path | None" = None,
+    data_root: "str | Path" = "data/eval",
+    benign_dir: str = "benign_responses",
+    harmful_dir: str = "harmful_responses",
+    harmful_source: Optional[str] = None,
+) -> Path:
+    """Locate the stored response corpus to evaluate/sweep — one shared resolver.
+
+    Tries the release layout under ``data_root`` first, then the original source
+    layout as a fallback. Used by ADA-LP (``probe.evaluate``), ADA-RK
+    (``rethink.generate``) and the guardrail baselines (``guardrails.evaluate``):
+
+    * benign  → ``over_refusal/{dataset}/{slug}/responses.jsonl`` (deep-alignment
+      checkpoints reuse their base model's benign responses via ``deep_alignment_base``)
+    * attack  → ``attacks/{dataset}_{attack}/{slug}/responses.jsonl``
+    * harmful → ``deep_prefill/{dataset}_responses.jsonl``
+
+    ``harmful_source`` (when set) selects the source-layout deep-prefill subdir
+    ``{harmful_dir}/{dataset}/{harmful_source}/responses.jsonl`` for the fallback.
+    """
+    if response_file:
+        path = Path(response_file)
+        if not path.exists():
+            raise FileNotFoundError(f"Response file not found: {path}")
+        return path
+
+    ds = dataset.lower()
+    root = Path(data_root)
+    if benign:
+        base = deep_alignment_base(model)  # None for non-deep-alignment models
+        slug = slugify_model(base or model) if model else "unknown_model"
+        candidates = [
+            root / "over_refusal" / ds / slug / "responses.jsonl",
+            Path(benign_dir) / ds / slug / "responses.jsonl",
+        ]
+    elif attack:
+        slug = slugify_model(model) if model else "unknown_model"
+        name = f"{ds}_{attack.lower()}"
+        candidates = [
+            root / "attacks" / name / slug / "responses.jsonl",
+            Path(harmful_dir) / name / slug / "responses.jsonl",
+        ]
+    else:
+        src_fallback = (
+            Path(harmful_dir) / ds / harmful_source / "responses.jsonl"
+            if harmful_source else Path(harmful_dir) / ds / "responses.jsonl"
+        )
+        candidates = [root / "deep_prefill" / f"{ds}_responses.jsonl", src_fallback]
+
+    for candidate in candidates:
+        if candidate.exists():
+            logger.info("Using response file: %s", candidate)
+            return candidate
+    msg = "No response file found. Tried: " + ", ".join(str(c) for c in candidates)
+    if ds == "hexphi":
+        msg += (
+            "\nHEx-PHI is not distributed (gated LLM-Tuning-Safety license); "
+            "reproduce it locally — see docs/HEXPHI.md."
+        )
+    raise FileNotFoundError(msg)
 
 
 def extract_messages(response: Dict) -> List[Dict]:

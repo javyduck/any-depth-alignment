@@ -55,9 +55,9 @@ from tqdm import tqdm
 from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
 
-from ..data.loading import extract_messages
+from ..data.loading import extract_messages, resolve_response_file
 from ..models.loading import load_tokenizer
-from ..registry import ModelSpec, deep_alignment_base, get_model
+from ..registry import ModelSpec, get_model
 from ..utils.io import read_jsonl, write_json
 from ..utils.naming import slugify_model
 from ..utils.text import contains_any
@@ -228,38 +228,10 @@ def find_response_file(
     Tries the release layout under ``data_root`` first, then the original source
     layout as a fallback so pre-existing artifacts still resolve.
     """
-    ds = dataset.lower()
-    root = Path(data_root)
-    if benign:
-        base = deep_alignment_base(model)
-        model_slug = slugify_model(base or model) if model else "unknown_model"
-        candidates = [
-            root / "over_refusal" / ds / model_slug / "responses.jsonl",
-            Path(benign_dir) / ds / model_slug / "responses.jsonl",
-        ]
-    elif attack:
-        model_slug = slugify_model(model) if model else "unknown_model"
-        name = f"{ds}_{attack.lower()}"
-        candidates = [
-            root / "attacks" / name / model_slug / "responses.jsonl",
-            Path(harmful_dir) / name / model_slug / "responses.jsonl",
-        ]
-    else:
-        candidates = [
-            root / "deep_prefill" / f"{ds}_responses.jsonl",
-            Path(harmful_dir) / ds / harmful_source / "responses.jsonl",
-        ]
-    for path in candidates:
-        if path.exists():
-            logger.info("Loading responses from %s", path)
-            return str(path)
-    msg = "No response file found. Tried: " + ", ".join(str(c) for c in candidates)
-    if ds == "hexphi":
-        msg += (
-            "\nHEx-PHI is not distributed (gated LLM-Tuning-Safety license); "
-            "reproduce it locally — see docs/HEXPHI.md."
-        )
-    raise FileNotFoundError(msg)
+    return str(resolve_response_file(
+        dataset, model, benign=benign, attack=attack, data_root=data_root,
+        benign_dir=benign_dir, harmful_dir=harmful_dir, harmful_source=harmful_source,
+    ))
 
 
 # --------------------------------------------------------------------------- #

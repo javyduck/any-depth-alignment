@@ -46,7 +46,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
-from ..data.loading import extract_messages, extract_response_text
+from ..data.loading import extract_messages, extract_response_text, resolve_response_file
 from ..models.extraction import HookHiddenStateCollector, parse_layer_list
 from ..models.loading import get_hidden_size, load_model_and_tokenizer, resolve_torch_dtype
 from ..registry import get_model
@@ -116,49 +116,10 @@ def find_response_file(
       ``{dataset}_{attack}`` under ``attacks/.../{model_slug}/responses.jsonl``
     * harmful (deep-prefill) → ``deep_prefill/{dataset}_responses.jsonl``
     """
-    if response_file:
-        path = Path(response_file)
-        if not path.exists():
-            raise FileNotFoundError(f"Response file not found: {path}")
-        return str(path)
-
-    model_slug = slugify_model(model) if model else "unknown_model"
-    ds = dataset.lower()
-    root = Path(data_root)
-
-    if benign:
-        candidates = [
-            root / "over_refusal" / ds / model_slug / "responses.jsonl",
-            Path("benign_responses") / ds / model_slug / "responses.jsonl",
-        ]
-    elif attack:
-        name = f"{ds}_{attack.lower()}"
-        candidates = [
-            root / "attacks" / name / model_slug / "responses.jsonl",
-            Path("harmful_responses") / name / model_slug / "responses.jsonl",
-        ]
-    else:
-        candidates = [
-            root / "deep_prefill" / f"{ds}_responses.jsonl",
-            Path("harmful_responses") / ds / "responses.jsonl",
-        ]
-
-    for candidate in candidates:
-        if candidate.exists():
-            logger.info("Using response file: %s", candidate)
-            return str(candidate)
-    hint = ""
-    if ds == "hexphi":
-        # HEx-PHI is gated (LLM-Tuning-Safety) and not redistributed; it must be
-        # regenerated locally. Point the user at the compliant reproduction path.
-        hint = (
-            "\nHEx-PHI is not distributed with this project (gated license). "
-            "Reproduce it locally — see docs/HEXPHI.md "
-            "(accept the HEx-PHI license, then `python -m ada.datagen.gen_harmful_gpt --dataset hexphi`)."
-        )
-    raise FileNotFoundError(
-        "No response file found. Tried: " + ", ".join(str(c) for c in candidates) + hint
-    )
+    return str(resolve_response_file(
+        dataset, model, benign=benign, attack=attack,
+        response_file=response_file, data_root=data_root,
+    ))
 
 
 # --------------------------------------------------------------------------- #

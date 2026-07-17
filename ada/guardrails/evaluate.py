@@ -48,7 +48,7 @@ from transformers import (
 )
 from vllm import LLM, SamplingParams
 
-from ..data.loading import extract_messages, extract_response_text
+from ..data.loading import extract_messages, extract_response_text, resolve_response_file
 from ..models.loading import load_tokenizer
 from ..utils.io import read_jsonl, write_json
 from ..utils.naming import slugify_model
@@ -97,42 +97,12 @@ def find_response_file(
       * attack : ``attacks/{dataset}_{attack}/{model_slug}/responses.jsonl``
       * harmful: ``deep_prefill/{dataset}_responses.jsonl``
     """
-    if response_file:
-        path = Path(response_file)
-        if not path.exists():
-            raise FileNotFoundError(f"Response file not found: {path}")
-        return path
-
-    ds = dataset.lower()
-    model_slug = slugify_model(model) if model else "unknown_model"
-    root = Path(data_root)
-    if benign:
-        candidates = [
-            root / "over_refusal" / ds / model_slug / "responses.jsonl",
-            Path(BENIGN_RESPONSES_DIR) / ds / model_slug / "responses.jsonl",
-        ]
-    elif attack:
-        name = f"{ds}_{attack.lower()}"
-        candidates = [
-            root / "attacks" / name / model_slug / "responses.jsonl",
-            Path(HARMFUL_RESPONSES_DIR) / name / model_slug / "responses.jsonl",
-        ]
-    else:
-        candidates = [
-            root / "deep_prefill" / f"{ds}_responses.jsonl",
-            Path(HARMFUL_RESPONSES_DIR) / ds / HARMFUL_SOURCE_SUBDIR / "responses.jsonl",
-        ]
-
-    for path in candidates:
-        if path.exists():
-            return path
-    msg = "No response file found. Tried: " + ", ".join(str(c) for c in candidates)
-    if ds == "hexphi":
-        msg += (
-            "\nHEx-PHI is not distributed (gated LLM-Tuning-Safety license); "
-            "reproduce it locally — see docs/HEXPHI.md."
-        )
-    raise FileNotFoundError(msg)
+    return resolve_response_file(
+        dataset, model, benign=benign, attack=attack,
+        response_file=response_file, data_root=data_root,
+        benign_dir=BENIGN_RESPONSES_DIR, harmful_dir=HARMFUL_RESPONSES_DIR,
+        harmful_source=HARMFUL_SOURCE_SUBDIR,
+    )
 
 
 def output_log_path(
