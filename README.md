@@ -12,9 +12,11 @@
 <p align="center">
   <strong>ICLR 2026</strong> · 🌐 <a href="https://javyduck.github.io/any-depth-alignment/">Project Page</a> · 📄 <a href="https://arxiv.org/abs/2510.18081">Paper</a>
   <br>
-  <sub>Jiawei Zhang<sup>1,2</sup> · Andrew Estornell<sup>1</sup> · Bo Li<sup>2,3,4</sup> · David D. Baek<sup>5</sup> · Xiaojun Xu<sup>1</sup></sub>
+  <sub>Jiawei Zhang<sup>1,2,†</sup> · Andrew Estornell<sup>1</sup> · Bo Li<sup>2,3,4</sup> · David D. Baek<sup>5</sup> · Xiaojun Xu<sup>1</sup></sub>
   <br>
   <sub><sup>1</sup> ByteDance Seed · <sup>2</sup> University of Chicago · <sup>3</sup> University of Illinois Urbana-Champaign · <sup>4</sup> Virtue AI · <sup>5</sup> MIT</sub>
+  <br>
+  <sub><sup>†</sup> Work done during an internship at ByteDance Seed.</sub>
 </p>
 
 <p align="center">
