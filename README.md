@@ -2,6 +2,7 @@
 <p align="center"><em>Unlocking the innate safety alignment of LLMs to <strong>any</strong> generation depth.</em></p>
 
 <p align="center">
+  <a href="https://javyduck.github.io/any-depth-alignment/"><img src="https://img.shields.io/badge/%F0%9F%8C%90%20Project-Page-2F80ED.svg" alt="Project Page"></a>
   <a href="https://arxiv.org/abs/2510.18081"><img src="https://img.shields.io/badge/arXiv-2510.18081-b31b1b.svg" alt="arXiv"></a>
   <a href="https://huggingface.co/javyduck/any-depth-alignment-probes"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Probes-public-yellow.svg" alt="Probes"></a>
   <a href="https://huggingface.co/datasets/javyduck/any-depth-alignment"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Datasets-gated-orange.svg" alt="Datasets"></a>
@@ -9,7 +10,7 @@
 </p>
 
 <p align="center">
-  <strong>ICLR 2026</strong> · 📄 <a href="https://arxiv.org/abs/2510.18081">Paper</a>
+  <strong>ICLR 2026</strong> · 🌐 <a href="https://javyduck.github.io/any-depth-alignment/">Project Page</a> · 📄 <a href="https://arxiv.org/abs/2510.18081">Paper</a>
 </p>
 
 ---
