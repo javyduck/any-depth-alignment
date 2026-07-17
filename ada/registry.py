@@ -76,6 +76,12 @@ class ModelSpec:
     chat_prompt_space: bool = False
     # Optional short label for plots/legends (falls back to the HF basename).
     short_name: Optional[str] = None
+    # Self-Defense reflection turn: user_header + prompt + reflection_assistant_header.
+    user_header: str = ""
+    reflection_assistant_header: str = ""
+    # Reasoning models only: the assistant header that opens the <think> block,
+    # used by ADA-RK and the reflection turn under --reasoning (empty otherwise).
+    reasoning_assistant_header: Optional[str] = None
 
     @property
     def slug(self) -> str:
@@ -133,6 +139,9 @@ def _registry() -> "dict[str, ModelSpec]":
             generation_prompt_suffix=_decode(merged.get("generation_prompt_suffix", "") or ""),
             chat_prompt_space=bool(merged.get("chat_prompt_space", False)),
             short_name=merged.get("short_name"),
+            user_header=_decode(merged.get("user_header", "") or ""),
+            reflection_assistant_header=_decode(merged.get("reflection_assistant_header", "") or ""),
+            reasoning_assistant_header=_decode(merged.get("reasoning_assistant_header")),
         )
     return specs
 

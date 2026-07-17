@@ -107,65 +107,8 @@ _MODE_TO_SLUG: Dict[str, str] = {
 
 
 # --------------------------------------------------------------------------- #
-# Chat-template quirks the current registry schema cannot express
+# Chat-template header helpers (all per-model detail comes from the registry)
 # --------------------------------------------------------------------------- #
-# The NON-reasoning ADA-RK header is ``ModelSpec.assistant_header`` (registry).
-# The three helpers below cover pieces the registry has no field for yet, keyed on
-# the resolved ModelSpec (family / hf_id — never a substring match):
-#   * the reasoning-variant assistant header (opens <think> instead of closing it),
-#   * the generation-prompt suffix appended after add_generation_prompt=True,
-#   * the Self-Defense reflection turn wrapping.
-# TODO(registry): migrate these into configs/models.yaml + ada.registry once its
-# schema grows the corresponding fields. See the release notes.
-
-# Self-Defense reflection wrapping per registered model:
-#   reflection tokens = user_open + REFLECTION_PROMPT + assistant_reopen
-# ``assistant_reasoning`` overrides ``assistant`` when reasoning is enabled.
-_REFLECTION: Dict[str, Dict[str, str]] = {
-    "meta-llama/Llama-2-7b-chat-hf": {
-        "user": " </s><s>[INST] ",
-        "assistant": " [/INST] ",
-    },
-    "meta-llama/Llama-3.1-8B-Instruct": {
-        "user": "<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n",
-        "assistant": "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
-    },
-    "mistralai/Ministral-8B-Instruct-2410": {
-        "user": "</s>[INST]",
-        "assistant": "[/INST]",
-    },
-    "google/gemma-2-2b-it": {
-        "user": "<end_of_turn>\n<start_of_turn>user\n",
-        "assistant": "<end_of_turn>\n<start_of_turn>model\n",
-    },
-    "google/gemma-2-9b-it": {
-        "user": "<end_of_turn>\n<start_of_turn>user\n",
-        "assistant": "<end_of_turn>\n<start_of_turn>model\n",
-    },
-    "google/gemma-2-27b-it": {
-        "user": "<end_of_turn>\n<start_of_turn>user\n",
-        "assistant": "<end_of_turn>\n<start_of_turn>model\n",
-    },
-    "Qwen/Qwen2.5-7B-Instruct": {
-        "user": "<|im_end|>\n<|im_start|>user\n",
-        "assistant": "<|im_end|>\n<|im_start|>assistant\n",
-    },
-    "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B": {
-        "user": "<｜end▁of▁sentence｜><｜User｜>",
-        "assistant": "<｜Assistant｜><think>\n\n</think>\n\n",
-        "assistant_reasoning": "<｜Assistant｜><think>\n",
-    },
-    "openai/gpt-oss-120b": {
-        "user": "<|end|><|start|>user<|message|>",
-        "assistant": (
-            "<|end|><|start|>assistant<|channel|>analysis<|message|>\n\n"
-            "<|end|><|start|>assistant<|channel|>final<|message|>"
-        ),
-        "assistant_reasoning": "<|end|><|start|>assistant<|channel|>analysis<|message|>",
-    },
-}
-
-
 def _try_get_model(model_name: str) -> Optional[ModelSpec]:
     """Return the ModelSpec, or ``None`` for models absent from the registry.
 
@@ -180,29 +123,28 @@ def _try_get_model(model_name: str) -> Optional[ModelSpec]:
 
 
 def _ada_rk_header(spec: ModelSpec, reasoning: bool) -> str:
-    """The assistant header re-injected by ADA-RK.
+    """The assistant header re-injected by ADA-RK (registry-driven).
 
-    The non-reasoning header is ``spec.assistant_header`` (registry). Reasoning
-    models leave the ``<think>`` block open, a variant the registry cannot yet
-    express, so those are supplied here.
+    Reasoning models leave the ``<think>`` block open via
+    ``spec.reasoning_assistant_header``; everyone else uses ``spec.assistant_header``.
     """
-    if reasoning:
-        if spec.family == "deepseek":
-            return "<｜Assistant｜><think>\n"
-        if spec.family == "gpt_oss":
-            return "<|end|><|start|>assistant<|channel|>analysis<|message|>"
+    if reasoning and spec.reasoning_assistant_header:
+        return spec.reasoning_assistant_header
     return spec.assistant_header
 
 
 def _self_defense_reflection(spec: ModelSpec, reasoning: bool) -> str:
-    """The Self-Defense reflection turn wrapped in the model's chat header."""
-    entry = _REFLECTION.get(spec.hf_id)
-    if entry is None:
+    """The Self-Defense reflection turn wrapped in the model's chat header.
+
+    ``user_header``/``reflection_assistant_header`` come from the registry; empty
+    for models that declare no reflection config (reflection then no-ops).
+    """
+    if not spec.user_header or not spec.reflection_assistant_header:
         return ""
-    assistant = entry["assistant"]
-    if reasoning and "assistant_reasoning" in entry:
-        assistant = entry["assistant_reasoning"]
-    return entry["user"] + REFLECTION_PROMPT + assistant
+    assistant = spec.reflection_assistant_header
+    if reasoning and spec.reasoning_assistant_header:
+        assistant = spec.reasoning_assistant_header
+    return spec.user_header + REFLECTION_PROMPT + assistant
 
 
 def generation_prompt_suffix(model_name: str) -> str:
