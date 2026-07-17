@@ -148,11 +148,13 @@ def sft_log_path(
     raise ValueError(f"Unknown method: {method}")
 
 
-def _refusal_rate_at_depth(path: Path, depth: int) -> Optional[float]:
+def _refusal_rate_at_depth(path: Path, depth: int, min_count: int = 10) -> Optional[float]:
     """Refusal rate at a fixed depth using the E4 notebook's denominator.
 
     Matches ``final-sft.ipynb`` ``parse_log_at_depth``: refusals-at-``depth`` over
-    the log's global ``total_responses`` (not the count present at that depth).
+    the log's global ``total_responses``. Deep depths that fewer than ``min_count``
+    responses ever reach are returned as ``None`` (dropped from the averaged curve),
+    exactly as the source guard did, so a couple of long outliers can't dominate.
     """
     data = read_json(path)
     total = data.get("total_responses") or 0
@@ -160,10 +162,10 @@ def _refusal_rate_at_depth(path: Path, depth: int) -> Optional[float]:
         return None
     def _flag(v):  # is_refusal may be a bool or the string "True"/"False"
         return v is True or (isinstance(v, str) and v.strip().lower() == "true")
-    n = sum(
-        1 for e in data.get("detailed_logs", [])
-        if int(e.get("depth", -1)) == depth and _flag(e.get("is_refusal", False))
-    )
+    at_depth = [e for e in data.get("detailed_logs", []) if int(e.get("depth", -1)) == depth]
+    if len(at_depth) < min_count:
+        return None
+    n = sum(1 for e in at_depth if _flag(e.get("is_refusal", False)))
     return n / total
 
 
