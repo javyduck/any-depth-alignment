@@ -67,7 +67,7 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 HARMFUL_RESPONSES_DIR = "harmful_responses"
 BENIGN_RESPONSES_DIR = "benign_responses"
-LOG_ROOT = "vllm_defense_logs"
+DEFAULT_OUTPUT_ROOT = "vllm_defense_logs"
 
 
 # A conversation whose serialized prompt exceeds this many guardrail tokens is
@@ -82,7 +82,7 @@ WILDGUARD_CANDIDATE_STRINGS = ["harmful response: yes"]
 # --------------------------------------------------------------------------- #
 # Input / output resolution
 # --------------------------------------------------------------------------- #
-def find_response_file(
+def _resolve_response_file(
     dataset: str,
     model: Optional[str] = None,
     benign: bool = False,
@@ -118,7 +118,7 @@ def output_log_path(
     log_type = "benign" if benign else "harmful"
     dataset_name = f"{dataset.lower()}_{attack.lower()}" if attack else dataset.lower()
     return (
-        Path(LOG_ROOT)
+        Path(DEFAULT_OUTPUT_ROOT)
         / log_type
         / dataset_name
         / slugify_model(defense_model)
@@ -554,7 +554,7 @@ def main() -> None:
     if guardrail_template(args.defense_model) == "wildguard":
         logger.info("Using WildGuard-specific candidate strings: %s", candidate_strings)
 
-    response_file = find_response_file(
+    response_file = _resolve_response_file(
         args.dataset, args.model, args.benign, args.attack,
         data_root=args.data_root, response_file=args.response_file,
     )

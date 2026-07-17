@@ -874,7 +874,7 @@ def _unescape(value: Optional[str]) -> Optional[str]:
     return value.replace("\\n", "\n")
 
 
-def create_argument_parser() -> argparse.ArgumentParser:
+def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Collect ADA-LP Safety-Token hidden states from benign/harmful responses"
     )
@@ -931,7 +931,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    args = create_argument_parser().parse_args()
+    args = build_arg_parser().parse_args()
 
     if not args.benign and not args.harmful:
         logger.error("Must specify either --benign or --harmful (or both)")

@@ -98,7 +98,7 @@ def load_model_and_tokenizer_with_adapter(
 # --------------------------------------------------------------------------- #
 # Response-file resolution
 # --------------------------------------------------------------------------- #
-def find_response_file(
+def _resolve_response_file(
     dataset: str,
     model: Optional[str] = None,
     benign: bool = False,
@@ -733,7 +733,7 @@ def main() -> None:
     else:
         target_layers = parse_layer_list(args.layers)
 
-    response_file = find_response_file(
+    response_file = _resolve_response_file(
         args.dataset, args.model, benign=args.benign, attack=args.attack,
         response_file=args.response_file, data_root=args.data_root,
     )

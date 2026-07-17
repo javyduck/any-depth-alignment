@@ -7,7 +7,7 @@ a robust defense keeps refusing even when the model is force-fed a long harmful
 continuation. The refusal rate at depth ``d`` is the *independent* per-depth
 rate: the fraction of instances that refuse when the prefill is cut at exactly
 ``d`` tokens. (This is the deep-prefill notebook's definition and is deliberately NOT the
-cumulative ``_common.parse_refusal_curve`` — under deep prefill a base model's
+cumulative ``_common.parse_refusal_curve`` — under deep-prefill a base model's
 per-depth refusal drops with depth, which is precisely what this figure exposes;
 the cumulative curve would mask it. See :func:`_refusal_curve`.)
 
@@ -29,7 +29,7 @@ It also prints the depth-500 "Table 1" refusal numbers (per-model and averaged).
 Methods (see ``METHOD_SPECS``):
     Base Model               -> mode_empty generation log
     Deep Alignment           -> mode_empty log of the deep-alignment baseline ckpt
-    Self Defense             -> mode_reflection generation log
+    Self-Defense             -> mode_reflection generation log
     ADA (RK)                 -> mode_add_safetytoken generation log
     ADA (LP)                 -> logistic probe log at the registry probe layer
     Meta Llama-Guard-4-12B   -> external guardrail defense log
@@ -112,7 +112,7 @@ CLAUDE_LABEL = "Claude Sonnet 4"
 METHOD_SPECS: List[Tuple[str, dict]] = [
     ("Base Model", dict(color="#4C78A8", marker="o", kind="mode", mode="empty")),
     ("Deep Alignment", dict(color="#17AEAF", marker="s", kind="deep_alignment")),
-    ("Self Defense", dict(color="#54A24B", marker="^", kind="mode", mode="reflection")),
+    ("Self-Defense", dict(color="#54A24B", marker="^", kind="mode", mode="reflection")),
     ("Meta Llama-Guard-4-12B",
      dict(color="#2F80ED", marker="v", kind="guardrail", guardrail="meta-llama/Llama-Guard-4-12B")),
     ("IBM Granite-Guardian-3.3-8b",

@@ -207,7 +207,7 @@ python -m ada.plotting.plot_deep_prefill --models your-org/Your-Model   # refusa
   probe_layer: 15                       # mid-layer hidden state ADA-LP reads
   hook_position: input_layernorm        # default read point
   # --- optional, only for specific features ---
-  chat_prompt_space: true               # if the template ends without whitespace (e.g. Llama-2's [/INST])
+  generation_prompt_space: true               # if the template ends without whitespace (e.g. Llama-2's [/INST])
   generation_prompt_suffix: "..."       # tokens to reach the answer channel (reasoning/harmony models)
   user_header: "<user-turn opener>"     # required for the Self-Defense baseline (reflection turn)
   reflection_assistant_header: "..."    # assistant opener for the reflection turn (Self-Defense)

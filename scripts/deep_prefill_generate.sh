@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Deep prefill attacks: Base / ADA-RK / Self-Defense / ADA-LP over depth.
+# Deep-prefill attacks: Base / ADA-RK / Self-Defense / ADA-LP over depth.
 # =============================================================================
 # Runs the generation-based methods (ada.rethink.generate) and the probe-based
 # method (ada.probe.evaluate) on the harmful deep-prefill corpora, checking

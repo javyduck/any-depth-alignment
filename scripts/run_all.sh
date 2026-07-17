@@ -18,7 +18,7 @@ bash scripts/probe_collect.sh
 bash scripts/probe_train.sh
 bash scripts/probe_figures.sh
 
-echo "==== Deep prefill attacks ===="
+echo "==== Deep-prefill attacks ===="
 bash scripts/deep_prefill_generate.sh
 bash scripts/deep_prefill_baselines.sh
 bash scripts/deep_prefill_figures.sh

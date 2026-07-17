@@ -92,7 +92,7 @@ DEFAULT_GUARDRAILS = [
     "ibm-granite/granite-guardian-3.3-8b",
 ]
 
-# Models with full adversarial-attack attack coverage (used when --models is not given).
+# Models with full adversarial-attack coverage (used when --models is not given).
 DEFAULT_MODELS = [
     "meta-llama/Llama-2-7b-chat-hf",
     "google/gemma-2-9b-it",
@@ -138,7 +138,7 @@ def build_methods(guardrails: List[str]) -> List[dict]:
     methods: List[dict] = [
         dict(name="Base Model", kind="base", color="#4C78A8", hatch=""),
         dict(name="Deep Alignment", kind="deep_alignment", color="#17AEAF", hatch="///"),
-        dict(name="Self Defense", kind="self_defense", color="#54A24B", hatch="..."),
+        dict(name="Self-Defense", kind="self_defense", color="#54A24B", hatch="..."),
     ]
     for i, gid in enumerate(guardrails):
         if gid in GUARDRAIL_STYLE:
@@ -165,7 +165,7 @@ def _dataset_attack(dataset: str, attack: str) -> str:
 def _attack_response_path(dataset: str, attack: str, model_slug: str) -> Path:
     """Adversarial-attack transcript for a model, preferring the release layout.
 
-    Mirrors ``ada.rethink.generate.find_response_file``: the released corpora live
+    Mirrors ``ada.rethink.generate._resolve_response_file``: the released corpora live
     under ``data/eval/attacks/`` (written by ``ada.attacks.extract`` / copied by
     ``prepare_datasets.sh``); the original ``harmful_responses/`` tree is a fallback
     so pre-existing source artifacts still resolve. Returns the first existing

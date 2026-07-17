@@ -51,7 +51,7 @@ google/gemma-2-9b-it --dataset advbench` loads the right probe from the registry
 
 ```bibtex
 @inproceedings{zhang2026anydepth,
-  title     = {Any-Depth Alignment: Unlocking the Innate Safety Alignment of LLMs to Any Depth},
+  title     = {Any-Depth Alignment: Unlocking Innate Safety Alignment of LLMs to Any-Depth},
   author    = {Zhang, Jiawei and Estornell, Andrew and Li, Bo and Baek, David D. and Xu, Xiaojun},
   booktitle = {ICLR},
   year      = {2026}

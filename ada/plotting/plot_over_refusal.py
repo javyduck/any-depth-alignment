@@ -16,7 +16,7 @@ Curves compared (per subplot):
 
 * **Base Model** / **Deep Alignment** - flat baselines computed from the plain
   benign responses (a refusal-string match), drawn as horizontal lines.
-* **Self Defense** - the reflection baseline (``mode_reflection``).
+* **Self-Defense** - the reflection baseline (``mode_reflection``).
 * two highlighted **guardrails** (``configs/guardrails.yaml`` ``highlighted:
   true`` -> Llama-Guard-4-12B and Granite-Guardian-3.3-8B) scoring a fixed
   reference model's benign responses.
@@ -91,7 +91,7 @@ XLIM = 600
 BASE_METHOD_STYLE = {
     "Base Model": {"color": "#4C78A8", "marker": "o", "linestyle": "--"},
     "Deep Alignment": {"color": "#17AEAF", "marker": "s", "linestyle": "--"},
-    "Self Defense": {"color": "#54A24B", "marker": "^", "linestyle": "-"},
+    "Self-Defense": {"color": "#54A24B", "marker": "^", "linestyle": "-"},
     "ADA (RK)": {"color": "#F26B21", "marker": "*", "linestyle": "-"},
     "ADA (LP)": {"color": "#D62F2F", "marker": "h", "linestyle": "-"},
 }
@@ -127,7 +127,7 @@ def build_method_specs() -> List[dict]:
     specs: List[dict] = [
         {"name": "Base Model", "kind": "baseline", **BASE_METHOD_STYLE["Base Model"]},
         {"name": "Deep Alignment", "kind": "baseline_deep", **BASE_METHOD_STYLE["Deep Alignment"]},
-        {"name": "Self Defense", "kind": "reflection", **BASE_METHOD_STYLE["Self Defense"]},
+        {"name": "Self-Defense", "kind": "reflection", **BASE_METHOD_STYLE["Self-Defense"]},
     ]
     for gid in load_highlighted_guardrails():
         label, color, marker = GUARDRAIL_DISPLAY.get(gid, (gid.split("/")[-1], "#888888", "D"))
@@ -239,7 +239,7 @@ def _baseline_benign_response_path(data_root: Path, dataset: str, slug: str) -> 
 
     ``prepare_datasets.sh`` copies these to ``data/eval/over_refusal/{ds}/{slug}/``
     (the same corpus every other reader resolves — see
-    ``ada.probe.evaluate.find_response_file``); the original ``benign_responses/``
+    ``ada.probe.evaluate._resolve_response_file``); the original ``benign_responses/``
     tree is kept as a source fallback. Returns the first existing candidate, else
     the release path (so ``calculate_baseline_refusal_rate`` reports no data).
     """

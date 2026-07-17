@@ -126,7 +126,7 @@ def load_guardrail_model_ids(config_dir: Path) -> List[str]:
 def load_guardrail_timing_overrides(config_dir: Path) -> Dict[str, dict]:
     """Per-guardrail timing quirks from ``guardrails.yaml``.
 
-    Reads the optional ``timing_attention_chunk_size`` / ``timing_flash_attention``
+    Reads the optional ``timing_attention_chunk_size`` / ``timing_use_flash_attention``
     fields so models like Llama-Guard-4-12B are benchmarked with the right
     chunked-attention span and attention kernel on the default reproduction path.
     """
@@ -140,8 +140,8 @@ def load_guardrail_timing_overrides(config_dir: Path) -> Dict[str, dict]:
         ov = {}
         if "timing_attention_chunk_size" in entry:
             ov["attention_chunk_size"] = entry["timing_attention_chunk_size"]
-        if "timing_flash_attention" in entry:
-            ov["use_flash_attention"] = entry["timing_flash_attention"]
+        if "timing_use_flash_attention" in entry:
+            ov["use_flash_attention"] = entry["timing_use_flash_attention"]
         if ov:
             overrides[entry["hf_id"]] = ov
     return overrides

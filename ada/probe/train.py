@@ -12,7 +12,7 @@ Input hidden states are produced by the collection stage and stored under::
 
 Each ``{layer}.pt`` is a tensor of shape ``(num_samples, num_depths + 1, hidden_size)``.
 By default depth 0 (the user-token position) is dropped and the remaining
-generation depths are flattened into independent training samples; ``--depth_zero``
+generation depths are flattened into independent training samples; ``--depth-zero``
 instead keeps *only* depth 0. Harmful and benign splits are concatenated, rows
 containing NaNs are dropped, and one classifier is fit per layer.
 
@@ -282,7 +282,7 @@ def build_layer_history(
 # --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
-def create_argument_parser() -> argparse.ArgumentParser:
+def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Train ADA-LP logistic-regression Safety-Token probes."
     )
@@ -312,7 +312,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
                         help="Hidden states collected with the full-forward strategy")
     parser.set_defaults(gradual_cache=True)
     parser.add_argument(
-        "--depth_zero", action="store_true",
+        "--depth-zero", action="store_true",
         help="Train on depth 0 (prompt-level) hidden states; otherwise use depths 1..N",
     )
     parser.add_argument(
@@ -343,7 +343,7 @@ def main() -> None:
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-    args = create_argument_parser().parse_args()
+    args = build_arg_parser().parse_args()
 
     # Default Safety Tokens / hook position to the registry so the training paths
     # line up with what ada.probe.collect wrote (single source of truth).

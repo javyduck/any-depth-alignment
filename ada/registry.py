@@ -73,7 +73,7 @@ class ModelSpec:
     # Append a single space after the chat-templated user prefix (for templates
     # like Llama-2's that end in ``[/INST]`` with no trailing whitespace). Matches
     # the original probe pipeline's per-model whitelist, so it is opt-in per model.
-    chat_prompt_space: bool = False
+    generation_prompt_space: bool = False
     # Optional short label for plots/legends (falls back to the HF basename).
     short_name: Optional[str] = None
     # Self-Defense reflection turn: user_header + prompt + reflection_assistant_header.
@@ -100,7 +100,7 @@ class ModelSpec:
         must start: the per-model reasoning/channel suffix, or a single trailing
         space for templates (like Llama-2's ``[/INST]``) that lack one.
         """
-        return self.generation_prompt_suffix or (" " if self.chat_prompt_space else "")
+        return self.generation_prompt_suffix or (" " if self.generation_prompt_space else "")
 
 
 @functools.lru_cache(maxsize=1)
@@ -140,7 +140,7 @@ def _registry() -> "dict[str, ModelSpec]":
             hook_position=merged.get("hook_position", "input_layernorm"),
             chat_template_from=merged.get("chat_template_from"),
             generation_prompt_suffix=_decode(merged.get("generation_prompt_suffix", "") or ""),
-            chat_prompt_space=bool(merged.get("chat_prompt_space", False)),
+            generation_prompt_space=bool(merged.get("generation_prompt_space", False)),
             short_name=merged.get("short_name"),
             user_header=_decode(merged.get("user_header", "") or ""),
             reflection_assistant_header=_decode(merged.get("reflection_assistant_header", "") or ""),

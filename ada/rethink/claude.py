@@ -61,10 +61,9 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 CLAUDE_TOKENIZER = "Xenova/claude-tokenizer"
 
-# Default harmful-response corpus (deep-prefill sources), matching the paper's deep-prefill
-# setup. Neutral subdir name shared with the rest of the pipeline (the jailbroken
-# generator + its recipe are withheld). Overridable on the CLI.
-DEFAULT_HARMFUL_SUBDIR = DEFAULT_HARMFUL_SOURCE
+# Default harmful-response corpus (deep-prefill sources) is the shared, neutral
+# DEFAULT_HARMFUL_SOURCE imported above (the jailbroken generator + its recipe are
+# withheld). Overridable on the CLI.
 
 # Refusal keywords used for the short-lookahead check. These are the exact defaults
 # used to produce the paper's Claude numbers (note the ASCII and curly apostrophe
@@ -415,7 +414,7 @@ def resolve_api_key(cli_value: Optional[str]) -> str:
     return api_key
 
 
-def find_response_file(
+def find_deep_prefill_response_file(
     dataset: str,
     benign: bool,
     harmful_root: str,
@@ -439,7 +438,7 @@ def load_responses(args: argparse.Namespace) -> List[Dict]:
         if not path.exists():
             raise FileNotFoundError(f"Response file not found: {path}")
     else:
-        path = find_response_file(
+        path = find_deep_prefill_response_file(
             args.dataset, args.benign, args.harmful_root, args.benign_root, args.harmful_subdir
         )
     logger.info("Loading responses from %s", path)
@@ -527,7 +526,7 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--harmful-subdir",
         type=str,
-        default=DEFAULT_HARMFUL_SUBDIR,
+        default=DEFAULT_HARMFUL_SOURCE,
         help="Sub-directory under {harmful-root}/{dataset} holding responses.jsonl",
     )
     parser.add_argument(

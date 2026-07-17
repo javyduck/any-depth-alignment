@@ -14,7 +14,7 @@ guardrails:
     loader: transformers        # Llama4ForConditionalGeneration + AutoProcessor
     highlighted: true
     timing_attention_chunk_size: 8192   # chunked attention; patch span for long contexts (inference-cost timing)
-    timing_flash_attention: false       # FA2 unsupported for this model in the timing run
+    timing_use_flash_attention: false       # FA2 unsupported for this model in the timing run
   - hf_id: ibm-granite/granite-guardian-3.3-8b
     template: standard
     loader: vllm

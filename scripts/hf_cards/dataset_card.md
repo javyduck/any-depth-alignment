@@ -70,8 +70,8 @@ Records are chat format: `{"messages": [{"role": "user", ...}, {"role": "assista
 `example_results/` holds a slim (~1 GB), **text-stripped** subset of the main
 evaluation logs (canonical-layer probe logs + generation/defense logs reduced to
 `{depth, instance, is_refusal}` — no prompts/completions/probabilities) plus the
-paper figures (`example_results/figures/`). It covers the main deep-prefill (deep-prefill),
-adversarial-attack (adversarial-attack), and over-refusal (over-refusal) figures; the SFT-attack SFT-adapter sweep
+paper figures (`example_results/figures/`). It covers the main deep-prefill,
+adversarial-attack, and over-refusal figures; the SFT-adapter sweep
 is not included (regenerate it with the pipeline). It lets you re-plot the main
 figures without re-running inference:
 

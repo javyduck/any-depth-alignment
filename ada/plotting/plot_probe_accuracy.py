@@ -51,7 +51,7 @@ from ada.utils.io import read_json
 # Token-choice ablation: header sub-spans probed as the Safety Token. This is the
 # Llama-3.1 header decomposition used in the paper; change --choice-model to run
 # the same figure for another model with a matching hand-picked span list.
-CHOICE_MODEL_DEFAULT = "meta-llama/Llama-3.1-8B-Instruct"
+DEFAULT_CHOICE_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
 CHOICE_SAFETY_TOKENS = [
     "empty",
     "\n",
@@ -66,7 +66,7 @@ CHOICE_SAFETY_TOKENS = [
 ]
 
 # Hook-position ablation: the six intra-block read positions, on one model.
-HOOK_MODEL_DEFAULT = "google/gemma-2-9b-it"
+DEFAULT_HOOK_MODEL = "google/gemma-2-9b-it"
 HOOK_SAFETY_TOKENS = "<end_of_turn>\n<start_of_turn>model"
 HOOK_POSITIONS = [
     "mlp",
@@ -287,9 +287,9 @@ def main() -> None:
     parser.add_argument("--mask-token", default="none")
     parser.add_argument("--no-gradual-cache", action="store_true",
                         help="Checkpoints were trained without gradual-cache.")
-    parser.add_argument("--choice-model", default=CHOICE_MODEL_DEFAULT,
+    parser.add_argument("--choice-model", default=DEFAULT_CHOICE_MODEL,
                         help="Model for the token-choice ablation panel.")
-    parser.add_argument("--hook-model", default=HOOK_MODEL_DEFAULT,
+    parser.add_argument("--hook-model", default=DEFAULT_HOOK_MODEL,
                         help="Model for the hook-position ablation panel.")
     parser.add_argument("--panels", nargs="+",
                         choices=["all_model", "choice", "hook"],

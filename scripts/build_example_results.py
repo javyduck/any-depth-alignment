@@ -34,7 +34,7 @@ from ada.utils.naming import slugify_model, slugify_safety_tokens
 SRC = Path(os.environ.get("SRC", "/data1/common/jiawei/SafetyToken"))
 OUT = Path(os.environ.get("OUT", "/tmp/ada_example_results"))
 # Keep the example subset small: only the main-experiment logs (base models, no
-# SFT-attack SFT-adapter sweep). Set INCLUDE_ADAPTER=1 to also include the adapter logs.
+# SFT-adapter sweep). Set INCLUDE_ADAPTER=1 to also include the adapter logs.
 INCLUDE_ADAPTER = os.environ.get("INCLUDE_ADAPTER", "0") == "1"
 
 # Keys kept in each detailed_logs entry. Dropping generated_text (harmful text)

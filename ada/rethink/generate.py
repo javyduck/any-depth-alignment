@@ -141,7 +141,7 @@ def _self_defense_reflection(spec: ModelSpec, reasoning: bool) -> str:
     return spec.user_header + REFLECTION_PROMPT + assistant
 
 
-def generation_prompt_suffix(model_name: str) -> str:
+def resolve_generation_prompt_completion(model_name: str) -> str:
     """Extra tokens appended to the generation prompt after the chat template.
 
     These force the initial generation into the right channel/branch for a few
@@ -218,7 +218,7 @@ def default_whitelist_strings() -> List[str]:
 # --------------------------------------------------------------------------- #
 # Response file resolution
 # --------------------------------------------------------------------------- #
-def find_response_file(
+def _resolve_response_file(
     dataset: str,
     model: Optional[str] = None,
     benign: bool = False,
@@ -287,7 +287,7 @@ def build_instances(
     max_depth: int,
 ) -> List[Dict]:
     """Tokenize responses and enumerate the depth levels to probe for each one."""
-    suffix = generation_prompt_suffix(model_name)
+    suffix = resolve_generation_prompt_completion(model_name)
     instances: List[Dict] = []
     for idx, resp in enumerate(responses):
         msgs = extract_messages(resp)
@@ -617,7 +617,7 @@ def main() -> None:
     if args.response_file:
         response_file = args.response_file
     else:
-        response_file = find_response_file(
+        response_file = _resolve_response_file(
             args.dataset,
             args.model,
             benign=args.benign,

@@ -53,7 +53,7 @@ INTERVAL = 25  # checkpoints are multiples of this
 DEPTH = 25
 MAX_DEPTH = 3000
 
-# The adversarial-attack attack-evaluated models (used when --models is not given).
+# The adversarial-attack-evaluated models (used when --models is not given).
 DEFAULT_MODELS = [
     "meta-llama/Llama-2-7b-chat-hf",
     "google/gemma-2-9b-it",
@@ -177,7 +177,7 @@ def resolve_models(requested: Optional[List[str]], dataset: str, split: str) -> 
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--models", nargs="+", default=None,
-                        help="HF model ids (default: the adversarial-attack attack-evaluated models).")
+                        help="HF model ids (default: the adversarial-attack-evaluated models).")
     parser.add_argument("--datasets", nargs="+", default=["advbench"],
                         help="Attack behaviour sets.")
     parser.add_argument("--split", default="harmful", help="Log split (attacks are always harmful).")

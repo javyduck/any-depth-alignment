@@ -153,10 +153,10 @@ def parse_refusal_curve(log_path: Union[str, Path]) -> Dict[int, float]:
 
         rate(d) = #{instances refusing at depth d} / #{instances checked at depth d}
 
-    This is the definition the depth-resolved figures (deep-prefill deep prefill, SFT-attack SFT,
+    This is the definition the depth-resolved figures (deep-prefill, SFT,
     over-refusal) rely on: a base model's per-depth refusal *drops* as a
     harmful prefill deepens, which a cumulative curve would hide. For the
-    "did it ever refuse" question (adversarial-attack attack-success), use
+    "did it ever refuse" question (attack-success), use
     :func:`cumulative_refusal_curve` instead.
     """
     detailed = read_json(log_path).get("detailed_logs", [])
@@ -177,7 +177,7 @@ def parse_refusal_curve(log_path: Union[str, Path]) -> Dict[int, float]:
 def cumulative_refusal_curve(log_path: Union[str, Path]) -> Dict[int, float]:
     """Cumulative refusal-rate curve: fraction that refused at *any* checkpoint <= d.
 
-    Used for adversarial-attack attack-success-rate accounting, where an attack succeeds only if
+    Used for attack-success-rate accounting, where an attack succeeds only if
     the defense never fires during the whole generation. The value at the deepest
     checkpoint is the fraction that *ever* refused; ``1 - that`` is the ASR.
     """

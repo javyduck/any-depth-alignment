@@ -56,7 +56,7 @@ data/
 │       └── harmful/wildjailbreak/{train,val}_responses.jsonl
 │
 ├── eval/                          # TEST-only
-│   ├── attack_prompts/            # adversarial-attack attack sources: advbench.csv (50), jailbreakbench.csv (100)
+│   ├── attack_prompts/            # adversarial-attack sources: advbench.csv (50), jailbreakbench.csv (100)
 │   ├── deep_prefill/              # deep-prefill: jailbroken-GPT harmful continuations (advbench/jailbreakbench/strongreject)
 │   ├── attacks/                   # adversarial-attack: {advbench,jailbreakbench}_{gcg,autodan,pair,tap}/<model>/responses.jsonl
 │   ├── over_refusal/              # over-refusal: per-model benign responses (gsm8k, math, …, xstest, safedecoding)

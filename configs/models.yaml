@@ -55,7 +55,7 @@ models:
     probe_token: "INST"
     probe_token_index: 2
     probe_layer: 15
-    chat_prompt_space: true   # template ends in [/INST] with no trailing whitespace
+    generation_prompt_space: true   # template ends in [/INST] with no trailing whitespace
     # Self-Defense reflection turn = user_header + prompt + reflection_assistant_header.
     # reasoning_assistant_header (below, reasoning models only) opens the <think> block
     # and is used by ADA-RK + the reflection turn when --reasoning is set.

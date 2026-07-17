@@ -295,7 +295,7 @@ def build_lora_config(
     lora_dropout: float = 0.0,
     target_modules=DEFAULT_LORA_TARGET_MODULES,
 ) -> LoraConfig:
-    """Build the causal-LM LoRA config used by the SFT-attack SFT attack."""
+    """Build the causal-LM LoRA config used by the SFT attack."""
     return LoraConfig(
         r=lora_r,
         lora_alpha=lora_alpha,

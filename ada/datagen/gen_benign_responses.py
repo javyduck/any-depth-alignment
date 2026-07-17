@@ -69,7 +69,7 @@ def load_prompts(dataset: str) -> List[str]:
         return load_harmful_prompts(dataset)
 
 
-def build_model_and_tokenizer(model_name: str):
+def build_vllm_engine(model_name: str):
     """Build a vLLM engine + tokenizer, borrowing a chat template if needed."""
     from transformers import AutoTokenizer
     from vllm import LLM
@@ -94,7 +94,7 @@ def build_model_and_tokenizer(model_name: str):
     return llm, tokenizer
 
 
-def generation_suffix(model_name: str) -> str:
+def resolve_generation_prompt_completion(model_name: str) -> str:
     """String appended after the generation prompt to reach the answer channel.
 
     Registry-first: for a registered model it is exactly
@@ -119,7 +119,7 @@ def generation_suffix(model_name: str) -> str:
 
 def prepare_prompts(prompts: List[str], tokenizer, model_name: str) -> List[str]:
     """Apply the chat template plus any family-specific generation suffix."""
-    suffix = generation_suffix(model_name)
+    suffix = resolve_generation_prompt_completion(model_name)
     formatted = []
     for prompt in prompts:
         text = tokenizer.apply_chat_template(
@@ -159,7 +159,7 @@ def collect(args: argparse.Namespace) -> None:
     )
 
     logger.info("Loading model '%s' ...", args.model)
-    llm, tokenizer = build_model_and_tokenizer(args.model)
+    llm, tokenizer = build_vllm_engine(args.model)
 
     responses: List[dict] = []
     total_generated = 0
