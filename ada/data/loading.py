@@ -19,6 +19,13 @@ from ..utils.naming import slugify_model
 
 logger = logging.getLogger(__name__)
 
+# The fine-tuned jailbroken generator whose continuations seed the deep-prefill
+# corpus — the subdir under the source-layout ``harmful_responses/{dataset}/`` tree.
+# Single source of truth shared by probe/rethink/guardrails response resolution.
+DEFAULT_HARMFUL_SOURCE = (
+    "ft_gpt-4_1-mini-2025-04-14_uiuc-li-group_3ktokens-2k5benign-6kinsecure_BwYQl9lV"
+)
+
 
 def resolve_response_file(
     dataset: str,
@@ -30,7 +37,7 @@ def resolve_response_file(
     data_root: "str | Path" = "data/eval",
     benign_dir: str = "benign_responses",
     harmful_dir: str = "harmful_responses",
-    harmful_source: Optional[str] = None,
+    harmful_source: Optional[str] = DEFAULT_HARMFUL_SOURCE,
 ) -> Path:
     """Locate the stored response corpus to evaluate/sweep — one shared resolver.
 

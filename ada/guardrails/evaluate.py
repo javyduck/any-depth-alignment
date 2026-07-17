@@ -48,7 +48,12 @@ from transformers import (
 )
 from vllm import LLM, SamplingParams
 
-from ..data.loading import extract_messages, extract_response_text, resolve_response_file
+from ..data.loading import (
+    DEFAULT_HARMFUL_SOURCE,
+    extract_messages,
+    extract_response_text,
+    resolve_response_file,
+)
 from ..models.loading import load_tokenizer
 from ..utils.io import read_jsonl, write_json
 from ..utils.naming import slugify_model
@@ -64,11 +69,6 @@ HARMFUL_RESPONSES_DIR = "harmful_responses"
 BENIGN_RESPONSES_DIR = "benign_responses"
 LOG_ROOT = "vllm_defense_logs"
 
-# Default source of harmful continuations: the fine-tuned model whose responses
-# form the harmful corpus (used only when no ``--attack`` subset is requested).
-HARMFUL_SOURCE_SUBDIR = (
-    "ft_gpt-4_1-mini-2025-04-14_uiuc-li-group_3ktokens-2k5benign-6kinsecure_BwYQl9lV"
-)
 
 # A conversation whose serialized prompt exceeds this many guardrail tokens is
 # skipped (too long to classify reliably).
@@ -101,7 +101,7 @@ def find_response_file(
         dataset, model, benign=benign, attack=attack,
         response_file=response_file, data_root=data_root,
         benign_dir=BENIGN_RESPONSES_DIR, harmful_dir=HARMFUL_RESPONSES_DIR,
-        harmful_source=HARMFUL_SOURCE_SUBDIR,
+        harmful_source=DEFAULT_HARMFUL_SOURCE,
     )
 
 

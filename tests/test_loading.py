@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from ada.data.loading import resolve_response_file
+from ada.data.loading import DEFAULT_HARMFUL_SOURCE, resolve_response_file
 
 
 def _touch(p):
@@ -18,6 +18,18 @@ def test_deep_prefill_release_layout(tmp_path):
     _touch(root / "deep_prefill" / "advbench_responses.jsonl")
     got = resolve_response_file("advbench", data_root=root)
     assert got.name == "advbench_responses.jsonl"
+
+
+def test_deep_prefill_source_fallback_keeps_ft_subdir(tmp_path):
+    """The source-layout harmful fallback must retain the fine-tuned generator subdir.
+
+    All three consumers (probe/rethink/guardrails) share this default so their
+    source-tree fallback matches the original ``analyze_probe.py`` layout:
+    ``harmful_responses/{dataset}/{ft-subdir}/responses.jsonl``.
+    """
+    with pytest.raises(FileNotFoundError) as e:
+        resolve_response_file("advbench", data_root=tmp_path / "empty")
+    assert f"harmful_responses/advbench/{DEFAULT_HARMFUL_SOURCE}/responses.jsonl" in str(e.value)
 
 
 def test_attack_and_benign_layout(tmp_path):

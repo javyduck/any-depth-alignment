@@ -55,7 +55,7 @@ from tqdm import tqdm
 from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
 
-from ..data.loading import extract_messages, resolve_response_file
+from ..data.loading import DEFAULT_HARMFUL_SOURCE, extract_messages, resolve_response_file
 from ..models.loading import load_tokenizer
 from ..registry import ModelSpec, get_model
 from ..utils.io import read_jsonl, write_json
@@ -73,12 +73,6 @@ _CONFIGS_DIR = Path(__file__).resolve().parents[2] / "configs"
 # Default relative response corpora roots (CWD-relative; overridable via CLI).
 HARMFUL_RESPONSES_ROOT = "harmful_responses"
 BENIGN_RESPONSES_ROOT = "benign_responses"
-# The finetuned model whose harmful continuations seed the depth sweep. Harmful
-# (non-attack) continuations are shared across all evaluated defense models, so
-# this fixed producer subdir is the source default (override with --response-file).
-DEFAULT_HARMFUL_SOURCE = (
-    "ft_gpt-4_1-mini-2025-04-14_uiuc-li-group_3ktokens-2k5benign-6kinsecure_BwYQl9lV"
-)
 DEFAULT_OUTPUT_ROOT = "vllm_generation_logs"
 
 # vLLM engine settings (exact values used for the paper's runs).
