@@ -171,6 +171,45 @@ spec.probe_safety_tokens   # '<end_of_turn>\n<start_of_turn>model'     (ADA-LP: 
 spec.probe_layer           # 23                                        (ADA-LP read layer)
 ```
 
+## Bring your own model
+
+Testing a **new Hugging Face model's deep-prefill robustness** is first-class — it reuses the shared harmful-prefill
+corpus (no new data needed).
+
+**Base model, no defense — works out of the box (no registry entry):**
+
+```bash
+# does <hf-id> keep refusing as a harmful continuation is forced deeper?
+python -m ada.rethink.generate --model your-org/Your-Model --dataset advbench --mode base
+python -m ada.plotting.plot_e2_prefill --models your-org/Your-Model   # refusal-vs-depth curve
+```
+
+**To defend it with ADA — add one entry to [`configs/models.yaml`](configs/models.yaml):**
+
+```yaml
+- hf_id: your-org/Your-Model
+  family: llama                         # grouping/plots only
+  assistant_header: "<full assistant-turn header>"   # what ADA-RK re-injects
+  probe_safety_tokens: "<header truncated so its LAST token is the probe token>"  # what ADA-LP reads
+  probe_token: "assistant"              # (doc) the probe token
+  probe_token_index: 2                  # (doc) its index in the span
+  probe_layer: 15                       # mid-layer hidden state ADA-LP reads
+  hook_position: input_layernorm        # default read point
+```
+
+Then run the exact same commands as above with `--mode ada_rk` (training-free) or, for **ADA-LP**, the
+`collect → train → evaluate` pipeline. Tips for filling the entry:
+
+- **`assistant_header`** is the chat template's assistant-turn opener — inspect it with
+  `AutoTokenizer.from_pretrained(hf_id).apply_chat_template([{ "role":"user","content":"hi" }], add_generation_prompt=True)`.
+- **`probe_safety_tokens`** = that header truncated so its *last* token is the role token (e.g. `assistant`/`model`);
+  a `pytest` check (`tests/test_tokenization.py`) verifies `probe_safety_tokens[-1] == probe_token`.
+- **`probe_layer`**: sweep with `ada.probe.collect/train --layers all`, then pick the peak from the E1 validation-accuracy plot (usually a mid layer).
+
+> Standard chat models need only this YAML entry. A brand-new *reasoning* model with a novel `<think>`-style header
+> may also need a small addition to [`ada/rethink/generate.py`](ada/rethink/generate.py) (its reasoning-variant header),
+> which is flagged in the code.
+
 ## Datasets: how the data is built
 
 Every corpus is stored uniformly as `{"messages": [{"role": "user", ...}, {"role": "assistant", ...}]}` and cleanly
