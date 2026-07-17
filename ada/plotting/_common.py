@@ -33,7 +33,18 @@ from typing import Dict, List, Optional, Union
 
 from ada.registry import get_model, list_models
 from ada.utils.io import read_json
-from ada.utils.naming import (
+from ada.utils.naming import (  # noqa: F401 (path builders re-exported for plotting callers)
+    DEFAULT_DEPTH_STEP,
+    DEFAULT_HOOK_POSITION,
+    DEFAULT_MAX_DEPTH,
+    DEFAULT_SEED,
+    find_defense_log,
+    find_generation_log,
+    find_probe_ckpt_json,
+    find_probe_log,
+    hidden_states_index_dir,
+    model_dir_slug,
+    probe_ckpt_dir,
     sanitize_filename,
     slugify_cache,
     slugify_hook_position,
@@ -50,11 +61,6 @@ logger = logging.getLogger(__name__)
 
 # All registered models, in registry (paper) order.
 MODELS: List[str] = list_models()
-
-DEFAULT_SEED = 42
-DEFAULT_HOOK_POSITION = "input_layernorm"
-DEFAULT_DEPTH_STEP = 25
-DEFAULT_MAX_DEPTH = 3000
 
 # Attack-set sizes (fixed ASR denominators): AdvBench 50 prompts, JailbreakBench 100.
 DATASET_TOTALS = {"advbench": 50, "jailbreakbench": 100}
@@ -222,158 +228,6 @@ def asr_from_generation_log(path: Union[str, Path], total: int) -> float:
     ever_refused_rate = curve[max(curve)] if curve else 0.0
     never_refused = round(n_present * (1.0 - ever_refused_rate))
     return never_refused / total
-
-
-# --------------------------------------------------------------------------- #
-# On-disk path builders
-# --------------------------------------------------------------------------- #
-
-def model_dir_slug(
-    model: str,
-    adapter_type: Optional[str] = None,
-    step: Optional[Union[int, str]] = None,
-    disable_safetytoken: bool = False,
-) -> str:
-    """Directory component for a (possibly adapter-tuned) model.
-
-    ``{model_slug}[-{adapter_type}-adapter-{step}[-disable_safetytoken]]``.
-    If ``model`` already contains an adapter suffix (as some logs were written),
-    pass it verbatim with ``adapter_type=None`` and it is slugified as-is.
-    """
-    slug = slugify_model(model)
-    if adapter_type is not None and step is not None:
-        slug = f"{slug}-{adapter_type}-adapter-{step}"
-        if disable_safetytoken:
-            slug = f"{slug}-disable_safetytoken"
-    return slug
-
-
-def find_generation_log(
-    split: str,
-    dataset: str,
-    model: str,
-    mode: str,
-    depth: Union[int, str] = DEFAULT_DEPTH_STEP,
-    maxdepth: Union[int, str] = DEFAULT_MAX_DEPTH,
-    *,
-    reasoning: bool = False,
-    adapter_type: Optional[str] = None,
-    step: Optional[Union[int, str]] = None,
-    disable_safetytoken: bool = False,
-    base_dir: Union[str, Path] = "vllm_generation_logs",
-) -> Path:
-    """Path to an ADA-RK / Base / Self-Defense generation log.
-
-    ``mode`` is one of ``empty`` (Base), ``add_safetytoken`` (ADA-RK single
-    injection) or ``reflection`` (ADA-RK / Self-Defense lookahead); the
-    ``_reasoning`` suffix is appended when ``reasoning`` is True.
-    """
-    model_dir = model_dir_slug(model, adapter_type, step, disable_safetytoken)
-    mode_dir = f"mode_{mode}" + ("_reasoning" if reasoning else "")
-    return (
-        Path(base_dir) / split / dataset / model_dir / mode_dir
-        / f"depth_{depth}_maxdepth_{maxdepth}.json"
-    )
-
-
-def find_probe_log(
-    split: str,
-    dataset: str,
-    model: str,
-    safety_tokens: str,
-    layer: int,
-    depth: Union[int, str] = DEFAULT_DEPTH_STEP,
-    maxdepth: Union[int, str] = DEFAULT_MAX_DEPTH,
-    *,
-    mask_tokens: str = "none",
-    hook_position: str = DEFAULT_HOOK_POSITION,
-    seed: int = DEFAULT_SEED,
-    probe_type_dir: str = "logistic",
-    adapter_type: Optional[str] = None,
-    step: Optional[Union[int, str]] = None,
-    disable_safetytoken: bool = False,
-    base_dir: Union[str, Path] = "logs",
-) -> Path:
-    """Path to an ADA-LP probe evaluation log for one (dataset, model, layer)."""
-    model_dir = model_dir_slug(model, adapter_type, step, disable_safetytoken)
-    return (
-        Path(base_dir) / split / dataset / model_dir
-        / slugify_safety_tokens(safety_tokens)
-        / slugify_mask_tokens(mask_tokens)
-        / slugify_hook_position(hook_position)
-        / f"seed_{seed}" / probe_type_dir / f"probe-layers{layer}"
-        / f"depth_{depth}_maxdepth_{maxdepth}.json"
-    )
-
-
-def find_defense_log(
-    split: str,
-    dataset: str,
-    guardrail: str,
-    model: str,
-    depth: Union[int, str] = DEFAULT_DEPTH_STEP,
-    maxdepth: Union[int, str] = DEFAULT_MAX_DEPTH,
-    *,
-    base_dir: Union[str, Path] = "vllm_defense_logs",
-) -> Path:
-    """Path to an external-guardrail defense log."""
-    guardrail_slug = slugify_model(guardrail)
-    return (
-        Path(base_dir) / split / dataset / guardrail_slug / slugify_model(model)
-        / f"depth_{depth}_maxdepth_{maxdepth}.json"
-    )
-
-
-def probe_ckpt_dir(
-    model: str,
-    safety_tokens: str,
-    *,
-    mask_tokens: str = "none",
-    hook_position: str = DEFAULT_HOOK_POSITION,
-    gradual_cache: bool = True,
-    seed: int = DEFAULT_SEED,
-    ckpt_dir: Union[str, Path] = "ckpts",
-) -> Path:
-    """Directory holding per-layer probe checkpoints/metrics for a model."""
-    return (
-        Path(ckpt_dir) / slugify_model(model)
-        / slugify_safety_tokens(safety_tokens)
-        / slugify_mask_tokens(mask_tokens)
-        / slugify_hook_position(hook_position)
-        / slugify_cache(gradual_cache)
-        / f"seed_{seed}" / "logistic"
-    )
-
-
-def find_probe_ckpt_json(model: str, safety_tokens: str, layer: int, **kwargs) -> Path:
-    """Path to the ``layer_{L}.json`` train/val-metrics record for one layer."""
-    return probe_ckpt_dir(model, safety_tokens, **kwargs) / f"layer_{layer}.json"
-
-
-def hidden_states_index_dir(
-    split: str,
-    model: str,
-    data_type: str,
-    safety_tokens: str,
-    index: int,
-    *,
-    mask_tokens: str = "none",
-    hook_position: str = DEFAULT_HOOK_POSITION,
-    gradual_cache: bool = True,
-    hidden_states_dir: Union[str, Path] = "hidden_states",
-) -> Path:
-    """Directory of one hidden-state shard (contains ``{layer}.pt`` files).
-
-    ``data_type`` is ``harmful`` / ``benign``; ``split`` is ``train`` / ``val``.
-    """
-    return (
-        Path(hidden_states_dir) / split / slugify_model(model) / data_type
-        / slugify_safety_tokens(safety_tokens)
-        / slugify_mask_tokens(mask_tokens)
-        / slugify_hook_position(hook_position)
-        / slugify_cache(gradual_cache)
-        / f"index_{index}"
-    )
 
 
 # --------------------------------------------------------------------------- #
