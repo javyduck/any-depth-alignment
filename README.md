@@ -55,6 +55,16 @@ refusal at *any* depth. **Any-Depth Alignment (ADA)** turns that key at inferenc
   directly with a single-pass **linear probe**: the base model becomes **its own guardrail**, more efficient than an
   external classifier and able to halt harmful output *mid-stream* rather than after the fact.
 
+<p align="center">
+  <img src="docs/assets/tsne.png" width="94%" alt="t-SNE of Safety-Token vs. last-generated-token hidden states across generation depths">
+  <br>
+  <sub><b>Why ADA-LP works — the safety signal is <em>already there</em>, and linearly separable.</b> t-SNE of hidden
+  states across generation depths (Llama-3.1-8B, layer 15). Features read from the <b>injected Safety Tokens</b> (bottom
+  row) become <b>cleanly, linearly separable</b> — benign vs. harmful — as depth grows, while the <b>last generated
+  token</b> (top row) stays entangled. The model's safety awareness is present in its hidden states and is <em>revealed</em>
+  by the Safety Tokens; ADA-LP just reads it with one linear probe (per-panel accuracy = a 2-D linear classifier).</sub>
+</p>
+
 - ✅ **Near-100% refusal** under deep-prefill attacks (dozens → thousands of tokens)
 - ✅ adversarial attack success cut from **> 50%** to **< 3%** (GCG / AutoDAN / PAIR / TAP)
 - ✅ **≈ 0%** benign over-refusal — utility preserved
